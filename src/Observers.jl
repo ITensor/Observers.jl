@@ -2,7 +2,6 @@ module Observers
 
 export Observer, func, results, update!
 
-# TODO: Rename Observer
 # TODO: allow optionally specifying the element type of the results
 # if they are known ahead of time.
 struct Observer <: AbstractDict{String, Pair{Function, Vector{Any}}}
