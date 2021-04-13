@@ -1,4 +1,4 @@
-using Observer
+using Observers
 
 # Series for π/4
 f(k) = (-1)^(k+1)/(2k-1)
@@ -19,7 +19,7 @@ err_from_π(; π_approx, kwargs...) = abs(π - π_approx) / π
 
 # Record which iteration we are at
 iteration(; iteration, kwargs...) = iteration
-obs = Observers(["Error" => err_from_π, "Iteration" => iteration])
+obs = Observer(["Error" => err_from_π, "Iteration" => iteration])
 
 niter = 10000
 π_approx = my_iterative_function(niter; observer! = obs, observe_step = 1000)
