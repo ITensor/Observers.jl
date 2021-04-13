@@ -1,13 +1,13 @@
-module Observer
+module Observers
 
-export Observers, func, results, update!
+export Observer, func, results, update!
 
 # TODO: Rename Observer
 # TODO: allow optionally specifying the element type of the results
 # if they are known ahead of time.
-struct Observers <: AbstractDict{String, Pair{Function, Vector{Any}}}
+struct Observer <: AbstractDict{String, Pair{Function, Vector{Any}}}
   data::Dict{String, Pair{Function, Vector{Any}}}
-  function Observers(kv)
+  function Observer(kv)
     d = Dict{String, Pair{Function, Vector{Any}}}()
     for (k, v) in kv
       d[k] = v => Any[]
@@ -16,14 +16,14 @@ struct Observers <: AbstractDict{String, Pair{Function, Vector{Any}}}
   end
 end
 
-Base.getindex(obs::Observers, n) = obs.data[n]
-Base.length(obs::Observers) = length(obs.data)
-Base.iterate(obs::Observers, args...) = iterate(obs.data, args...)
+Base.getindex(obs::Observer, n) = obs.data[n]
+Base.length(obs::Observer) = length(obs.data)
+Base.iterate(obs::Observer, args...) = iterate(obs.data, args...)
 
-func(obs::Observers, n) = first(obs[n])
-results(obs::Observers, n) = last(obs[n])
+func(obs::Observer, n) = first(obs[n])
+results(obs::Observer, n) = last(obs[n])
 
-function update!(obs::Observers, args...; kwargs...)
+function update!(obs::Observer, args...; kwargs...)
   for (k, v) in obs
     func_k, results_k = obs[k]
     push!(results_k, func_k(args...; kwargs...))
