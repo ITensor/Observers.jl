@@ -27,6 +27,9 @@ Base.setindex!(obs::Observer, observable::Function, obsname::String) =
 Base.copy(observer::Observer) =  
   Observer([obsname => first(observer[obsname]) for obsname in keys(observer)])
 
+results(observer::Observer, obsname::String) = 
+  last(observer[obsname])
+
 function update!(obs::Observer, args...; kwargs...)
   for (k, v) in obs
     obs_k = obs[k]

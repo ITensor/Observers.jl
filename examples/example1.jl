@@ -28,6 +28,6 @@ niter = 10000
 @show obs
 @show obs["Iteration"].f
 @show obs["Error"].f
-@show obs["Iteration"].results
-@show obs["Error"].results
+@show results(obs, "Iteration")
+@show results(obs, "Error")
 
