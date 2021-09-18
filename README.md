@@ -1,4 +1,4 @@
-# Observer.jl
+# Observers.jl
 
 The Observes.jl package provides functionalities to record and track metrics of interests during the iterative evaluation
 of a given function. It may be used to monitor convergence of optimization algorithms, to measure revelant observables in
