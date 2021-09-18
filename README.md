@@ -1,3 +1,6 @@
+[![Tests](https://github.com/GTorlai/Observers.jl/workflows/Tests/badge.svg)](https://github.com/GTorlai/Observers.jl/actions?query=workflow%3ATests)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 # Observers.jl
 
 The Observes.jl package provides functionalities to record and track metrics of interests during the iterative evaluation
