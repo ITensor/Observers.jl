@@ -41,3 +41,12 @@ obs_load = load("outputdata.jld")
 for (k,v) in obs_load
   @test v ≈ last(obs[k])
 end
+
+obs = Observer(["Error" => err_from_π, "Iteration" => iteration])
+obs["nofunction"] = nothing
+
+niter = 10000
+observe_step = 1000
+π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
+
+@test results(obs,"nofunction") == []

@@ -6,7 +6,7 @@ export Observer, func, results, update!, save, load
 
 # TODO: allow optionally specifying the element type of the results
 # if they are known ahead of time.
-const FunctionAndResults = NamedTuple{(:f, :results), Tuple{Function, Vector{Any}}}
+const FunctionAndResults = NamedTuple{(:f, :results), Tuple{Union{Nothing,Function}, Vector{Any}}}
 
 struct Observer <: AbstractDict{String, FunctionAndResults}
   data::Dict{String, FunctionAndResults}
@@ -23,7 +23,7 @@ Base.length(obs::Observer) = length(obs.data)
 Base.iterate(obs::Observer, args...) = iterate(obs.data, args...)
 
 Base.getindex(obs::Observer, n) = obs.data[n]
-Base.setindex!(obs::Observer, observable::Function, obsname::String) = 
+Base.setindex!(obs::Observer, observable::Union{Nothing,Function}, obsname::String) = 
   Base.setindex!(obs.data, (f = observable, results = Any[]), obsname)
 
 Base.copy(observer::Observer) =  
