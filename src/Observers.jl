@@ -41,7 +41,7 @@ function update!(obs::Observer, args...; kwargs...)
 end
 
 function save(path::String, observer::Observer)
-  if path[end-3:end] != "jld"
+  if path[end-3:end] != ".jld"
     path = path * ".jld"
   end
   obsout = Dict([obsname => last(observer[obsname]) for obsname in keys(observer)])
