@@ -1,6 +1,6 @@
 name = "Observers"
 uuid = "338f10d5-c7f1-4033-a7d1-f9dec39bcaa0"
-authors = ["Giacomo Torlai <torlaigiacomo@gmail.com>", "Matthew Fishman <mfishman@flatironinstitute.org>"]
+authors = ["Giacomo Torlai <gttorlai@amazon.com>", "Matthew Fishman <mfishman@flatironinstitute.org>"]
 version = "0.0.1"
 
 [deps]

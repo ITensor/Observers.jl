@@ -1,6 +1,8 @@
 module Observers
 
-export Observer, func, results, update!
+import JLD: load, save
+
+export Observer, func, results, update!, save, load
 
 # TODO: allow optionally specifying the element type of the results
 # if they are known ahead of time.
@@ -36,6 +38,14 @@ function update!(obs::Observer, args...; kwargs...)
     push!(obs_k.results, obs_k.f(args...; kwargs...))
   end
   return obs
+end
+
+function save(path::String, observer::Observer)
+  if path[end-3:end] != "jld"
+    path = path * ".jld"
+  end
+  obsout = Dict([obsname => last(observer[obsname]) for obsname in keys(observer)])
+  save(path, obsout)
 end
 
 end # module

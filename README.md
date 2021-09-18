@@ -31,6 +31,9 @@ obs = Observer(["Error" => err_from_π, "Iteration" => iteration])
 niter = 10000
 π_approx = my_iterative_function(niter; observer! = obs, observe_step = 1000)
 
+# save the results dictionary as a JLD
+save("results", obs)
+
 @show obs
 # obs = Observer(
 #   "Iteration" => NamedTuple{(:f, :results), Tuple{Function, Vector{Any}}}
