@@ -17,9 +17,15 @@ struct Observer <: AbstractDict{String, FunctionAndResults}
   end
 end
 
-Base.getindex(obs::Observer, n) = obs.data[n]
 Base.length(obs::Observer) = length(obs.data)
 Base.iterate(obs::Observer, args...) = iterate(obs.data, args...)
+
+Base.getindex(obs::Observer, n) = obs.data[n]
+Base.setindex!(obs::Observer, observable::Function, obsname::String) = 
+  Base.setindex!(obs.data, (f = observable, results = Any[]), obsname)
+
+Base.copy(observer::Observer) =  
+  Observer([obsname => first(observer[obsname]) for obsname in keys(observer)])
 
 function update!(obs::Observer, args...; kwargs...)
   for (k, v) in obs
