@@ -35,7 +35,9 @@ results(observer::Observer, obsname::String) =
 function update!(obs::Observer, args...; kwargs...)
   for (k, v) in obs
     obs_k = obs[k]
-    push!(obs_k.results, obs_k.f(args...; kwargs...))
+    if !isnothing(obs_k.f)
+      push!(obs_k.results, obs_k.f(args...; kwargs...))
+    end
   end
   return obs
 end
