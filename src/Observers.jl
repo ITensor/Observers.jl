@@ -19,6 +19,8 @@ struct Observer <: AbstractDict{String, FunctionAndResults}
   end
 end
 
+Observer() = Observer(Dict{String, FunctionAndResults}())
+
 Base.length(obs::Observer) = length(obs.data)
 Base.iterate(obs::Observer, args...) = iterate(obs.data, args...)
 
