@@ -25,8 +25,12 @@ Base.length(obs::Observer) = length(obs.data)
 Base.iterate(obs::Observer, args...) = iterate(obs.data, args...)
 
 Base.getindex(obs::Observer, n) = obs.data[n]
+
 Base.setindex!(obs::Observer, observable::Union{Nothing,Function}, obsname::String) = 
   Base.setindex!(obs.data, (f = observable, results = Any[]), obsname)
+
+Base.setindex!(obs::Observer, measurements::NamedTuple, obsname::String) = 
+  Base.setindex!(obs.data, measurements, obsname)
 
 Base.copy(observer::Observer) =  
   Observer([obsname => first(observer[obsname]) for obsname in keys(observer)])
