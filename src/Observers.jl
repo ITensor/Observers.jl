@@ -32,6 +32,9 @@ Base.setindex!(obs::Observer, observable::Union{Nothing,Function}, obsname::Stri
 Base.setindex!(obs::Observer, measurements::NamedTuple, obsname::String) = 
   Base.setindex!(obs.data, measurements, obsname)
 
+Base.setindex!(obs::Observer, measurements::Tuple{Union{Nothing,Function}, Vector{Any}}, obsname::String) = 
+  Base.setindex!(obs.data, (f = first(measurements), results = last(measurements)), obsname)
+
 Base.copy(observer::Observer) =  
   Observer([obsname => first(observer[obsname]) for obsname in keys(observer)])
 
