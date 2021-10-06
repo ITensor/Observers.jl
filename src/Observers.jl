@@ -1,8 +1,6 @@
 module Observers
 
-import JLD: load, save
-
-export Observer, func, results, update!, save, load
+export Observer, func, results, update!
 
 # TODO: allow optionally specifying the element type of the results
 # if they are known ahead of time.
@@ -43,6 +41,9 @@ Base.copy(observer::Observer) =
 results(observer::Observer, obsname::String) = 
   last(observer[obsname])
 
+results(observer::Observer) =
+  Dict([obsname => last(observer[obsname]) for obsname in keys(observer)])
+
 """
     update!(obs::Observer, args...; kwargs...)
 
@@ -81,14 +82,5 @@ end
 
 update!(f::Function, results, result) = 
   push!(results, result)
-
-
-function save(path::String, observer::Observer)
-  if path[end-3:end] != ".jld"
-    path = path * ".jld"
-  end
-  obsout = Dict([obsname => last(observer[obsname]) for obsname in keys(observer)])
-  save(path, obsout)
-end
 
 end # module

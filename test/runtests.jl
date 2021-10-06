@@ -1,5 +1,6 @@
 using Observers
 using Test
+using JLD
 
 import Observers: update!
 
@@ -37,8 +38,7 @@ import Observers: update!
     @test length(last(last(res))) == niter ÷ observe_step
   end
   
-  save("outputdata.jld", obs)
-  
+  save("outputdata.jld", results(obs)) 
   obs_load = load("outputdata.jld")
   
   for (k,v) in obs_load
@@ -105,6 +105,5 @@ end
   
   @test length( results(obs,"g")) == 1
   @test length( results(obs,"f")) == 100
-  
 end  
   
