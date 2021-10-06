@@ -39,7 +39,7 @@ import Observers: update!
   end
   
   save("outputdata.jld2", results(obs)) 
-  obs_load = load("outputdata.jld")
+  obs_load = load("outputdata.jld2")
   
   for (k,v) in obs_load
     @test v ≈ last(obs[k])
