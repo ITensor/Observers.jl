@@ -66,19 +66,22 @@ function update!(obs::Observer, args...; kwargs...)
           # check the kwargs of such function
           kwargs_list = Base.kwarg_decl(which(obs_k.f, tlist))
           # remove the kwargs... from the kwargs
-          filter!(x -> x ≠ Symbol("kwargs..."), kwargs_list)
+          filter!(x -> !(length(string(x)) ≥ 4 && string(x)[end-2:end] == "..."), kwargs_list)
           # execute the function
-          result = isempty(kwargs_list) ? obs_k.f(args[1:i]...) : 
-                                          obs_k.f(args[1:i]...; (kwargs_list .=> [kwargs[κ] for κ in kwargs_list])...)
+          result = obs_k.f(args[1:i]...; (kwargs_list .=> [kwargs[κ] for κ in kwargs_list])...)
           break
         end
       end
       result isa MissingMethod && error("No method found")
-      push!(obs_k.results, result)
+      update!(obs_k.f, obs_k.results, result)
     end
   end
   return obs
 end
+
+update!(f::Function, results, result) = 
+  push!(results, result)
+
 
 function save(path::String, observer::Observer)
   if path[end-3:end] != ".jld"
