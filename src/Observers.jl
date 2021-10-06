@@ -1,6 +1,6 @@
 module Observers
 
-export Observer, func, results, update!
+export Observer, functions_and_results, results, update!
 
 # TODO: allow optionally specifying the element type of the results
 # if they are known ahead of time.
@@ -40,6 +40,9 @@ Base.copy(observer::Observer) =
 
 results(observer::Observer, obsname::String) = 
   last(observer[obsname])
+
+functions_and_results(obs::Observer) = 
+  obs.data
 
 results(observer::Observer) =
   Dict([obsname => last(observer[obsname]) for obsname in keys(observer)])
