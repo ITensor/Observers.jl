@@ -50,3 +50,31 @@ observe_step = 1000
 π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
 
 @test results(obs,"nofunction") == []
+
+f1(x::Int) = x^2
+f2(x::Int, y::Float64) = x + y
+f3(_,_,t::Tuple) = first(t)
+f4(x::Int; a::Float64) = x * a
+f5(x::Int; a::Float64, b::Float64) = x * a + b
+
+function my_other_iterative_function(; observer!)
+  k = 2
+  x = k
+  y = k * √2
+  t = (x+2*y,0,0)
+  a = y^2
+  b = 3.0
+  update!(observer!, x, y, t; a = a, b = b)
+end
+
+obs = Observer(["f1" => f1, "f2" => f2, "f3" => f3, "f4" => f4, "f5" => f5])
+
+my_other_iterative_function(; observer! = obs)
+
+@test results(obs,"f1")[1] ≈ 4.0
+@test results(obs,"f2")[1] ≈ 2.0 + 2*√2
+@test results(obs,"f3")[1] ≈ 2.0 + 4*√2 
+@test results(obs,"f4")[1] ≈ 16.0
+@test results(obs,"f5")[1] ≈ 19.0
+
+
