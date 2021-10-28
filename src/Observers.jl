@@ -25,6 +25,7 @@ Base.length(obs::Observer) = length(obs.data)
 Base.iterate(obs::Observer, args...) = iterate(obs.data, args...)
 
 Base.getindex(obs::Observer, n) = obs.data[n]
+Base.get(obs::Observer, n, x) = get(obs.data, n, x)
 
 Base.setindex!(obs::Observer, observable::Union{Nothing,Function}, obsname::String) = 
   Base.setindex!(obs.data, (f = observable, results = Any[]), obsname)

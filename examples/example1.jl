@@ -26,7 +26,5 @@ niter = 10000
 
 @show π_approx
 @show obs
-@show obs["Iteration"].f
-@show obs["Error"].f
 @show results(obs, "Iteration")
 @show results(obs, "Error")
