@@ -38,8 +38,8 @@ niter = 10000
 using FileIO
 save("results.jld2", obs)
 obs_loaded = load("results.jld2")
-obs_loaded == obs
-results(obs_loaded, "Error") == results(obs, "Error")
+@show obs_loaded == obs
+@show results(obs_loaded, "Error") == results(obs, "Error")
  
 @show obs
 # obs = Observer(
