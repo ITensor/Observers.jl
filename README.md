@@ -36,7 +36,7 @@ niter = 10000
 
 # save the results dictionary as a JLD
 using JLD2
-save("results", obs)
+save("results.jld", obs)
 
 @show obs
 # obs = Observer(
@@ -47,12 +47,12 @@ save("results", obs)
 #                                5.305164733068067e-5, 4.54728406537879e-5, 3.978873562176942e-5, 3.536776502730045e-5, 3.18309885415475e-5])))
 
 
-@show results(obs["Iteration"])
+@show results(obs, "Iteration")
 # results(obs, "Iteration") = 
 #   Any[1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
 
 
-@show results(obs["Error"])
+@show results(obs, "Error")
 # results(obs, "Error") = 
 #   Any[0.0003183098066059948, 0.0001591549331452938, 0.00010610329244741256, 7.957747030096378e-5, 6.366197660078155e-5, 
 #       5.305164733068067e-5, 4.54728406537879e-5, 3.978873562176942e-5, 3.536776502730045e-5, 3.18309885415475e-5]
