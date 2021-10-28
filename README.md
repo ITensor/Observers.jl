@@ -35,6 +35,7 @@ niter = 10000
 π_approx = my_iterative_function(niter; observer! = obs, observe_step = 1000)
 
 # save the results dictionary as a JLD
+using JLD2
 save("results", obs)
 
 @show obs
