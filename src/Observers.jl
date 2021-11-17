@@ -1,25 +1,24 @@
 module Observers
 
-export Observer, functions_and_results, results, update!
+export Observer, results, update!
 
-# TODO: allow optionally specifying the element type of the results
-# if they are known ahead of time.
-const FunctionAndResults = NamedTuple{(:f, :results), Tuple{Union{Nothing,Function}, Vector{Any}}}
+const FunctionAndResults = NamedTuple{(:f,:results),Tuple{Union{Nothing,Function},Any}}
 
-struct Observer <: AbstractDict{String, FunctionAndResults}
-  data::Dict{String, FunctionAndResults}
-  function Observer(kv)
-    d = Dict{String, FunctionAndResults}()
-    for (k, v) in kv
-      d[k] = (f = v, results = Any[])
-    end
-    return new(d)
+struct Observer <: AbstractDict{String,FunctionAndResults}
+  data::Dict{String,FunctionAndResults}
+end
+
+function Observer(key_function_pairs::Vector)
+  d = Dict{String,FunctionAndResults}()
+  for (k, v) in key_function_pairs
+    d[k] = (f = v, results = Any[])
   end
+  return Observer(d)
 end
 
 struct MissingMethod end
 
-Observer() = Observer(Dict{String, FunctionAndResults}())
+Observer() = Observer(Dict{String,FunctionAndResults}())
 
 Base.length(obs::Observer) = length(obs.data)
 Base.iterate(obs::Observer, args...) = iterate(obs.data, args...)
@@ -33,14 +32,19 @@ Base.setindex!(obs::Observer, observable::Union{Nothing,Function}, obsname::Stri
 Base.setindex!(obs::Observer, measurements::NamedTuple, obsname::String) = 
   Base.setindex!(obs.data, measurements, obsname)
 
-Base.setindex!(obs::Observer, measurements::Tuple{Union{Nothing,Function}, Vector{Any}}, obsname::String) = 
+Base.setindex!(obs::Observer, measurements::Tuple{Union{Nothing,Function},Vector{Any}}, obsname::String) = 
   Base.setindex!(obs.data, (f = first(measurements), results = last(measurements)), obsname)
 
 Base.copy(observer::Observer) =  
   Observer([obsname => first(observer[obsname]) for obsname in keys(observer)])
 
 results(observer::Observer, obsname::String) = 
-  last(observer[obsname])
+  observer[obsname].results
+
+function set_results!(observer::Observer, results, obsname::String)
+  observer[obsname] = (f=observer[obsname].f, results=results)
+  return observer
+end
 
 functions_and_results(obs::Observer) = 
   obs.data
@@ -78,13 +82,31 @@ function update!(obs::Observer, args...; kwargs...)
         end
       end
       result isa MissingMethod && error("No method found")
-      update!(obs_k.f, obs_k.results, result)
+      update!(obs, obs_k.f, k, result)
     end
   end
   return obs
 end
 
-update!(f::Function, results, result) = 
-  push!(results, result)
+function update!(obs::Observer, f::Function, k, result)
+  if result isa eltype(obs[k].results) && !isempty(obs[k].results)
+    update!(f, obs[k].results, result)
+  elseif isempty(obs[k].results)
+    # This sets the type of the results to the type
+    # of the initial results.
+    set_results!(obs, [result], k)
+  else
+    # If the type of the result doesn't fit into the current
+    # results storage, convert the results.
+    T = promote_type(typeof(result), eltype(obs[k].results))
+    obs_k_results = convert(Vector{T}, obs[k].results)
+    update!(f, obs_k_results, result)
+    set_results!(obs, obs_k_results, k)
+  end
+end
+
+# Allows external users to customize updating the results for
+# a given function, for example by emptying them.
+update!(f::Function, results, result) = push!(results, result)
 
 end # module

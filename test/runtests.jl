@@ -1,8 +1,7 @@
 using Observers
+using DataFrames
 using Test
 using JLD2
-
-import Observers: update!
 
 @testset "Observer" begin
   # Series for π/4
@@ -106,4 +105,54 @@ end
   @test length( results(obs,"g")) == 1
   @test length( results(obs,"f")) == 100
 end  
-  
+
+@testset "Test element types of Array" begin
+  f(k, x::Int, y::Float64) = x + y
+  g(k, x) = k < 20 ? 0 : exp(im * x)
+
+  function iterative_function(niter::Int; observer!)
+    for k in 1:niter
+      x = k
+      y = x * √2
+      update!(observer!, k, x, y)
+    end
+  end
+
+  obs = Observer(["f" => f, "g" => g])
+  iterative_function(100; observer! = obs)
+  res = results(obs)
+  @test length(res["f"]) == 100
+  @test length(res["g"]) == 100
+  @test res["f"] isa Vector{Float64}
+  @test res["g"] isa Vector{ComplexF64}
+
+  obs = Observer(["f" => f, "g" => g])
+  iterative_function(10; observer! = obs)
+  res = results(obs)
+  @test length(res["f"]) == 10
+  @test length(res["g"]) == 10
+  @test res["f"] isa Vector{Float64}
+  @test res["g"] isa Vector{Int}
+end
+
+@testset "Conversion to DataFrames" begin
+  f(k, x::Int, y::Float64) = x + y
+  g(k, x) = k < 20 ? 0 : exp(im * x)
+  function iterative_function(niter::Int; observer!)
+    for k in 1:niter
+      x = k
+      y = x * √2
+      update!(observer!, k, x, y)
+    end
+  end
+  obs = Observer(["f" => f, "g" => g])
+  iterative_function(100; observer! = obs)
+  res = results(obs)
+  df = DataFrame(results(obs))
+  @test df.f == res["f"]
+  @test df.g == res["g"]
+  @test length(df.f) == 100
+  @test length(df.g) == 100
+  @test df.f isa Vector{Float64}
+  @test df.g isa Vector{ComplexF64}
+end
