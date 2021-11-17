@@ -1,6 +1,6 @@
 module Observers
 
-export Observer, results, update!
+export Observer, results, empty_results!, empty_results, update!
 
 const FunctionAndResults = NamedTuple{(:f,:results),Tuple{Union{Nothing,Function},Any}}
 
@@ -35,8 +35,23 @@ Base.setindex!(obs::Observer, measurements::NamedTuple, obsname::String) =
 Base.setindex!(obs::Observer, measurements::Tuple{Union{Nothing,Function},Vector{Any}}, obsname::String) = 
   Base.setindex!(obs.data, (f = first(measurements), results = last(measurements)), obsname)
 
-Base.copy(observer::Observer) =  
-  Observer([obsname => first(observer[obsname]) for obsname in keys(observer)])
+Base.copy(observer::Observer) = Observer(copy(observer.data))
+
+Base.empty!(observer::Observer) = empty!(observer.data)
+
+function empty_results!(observer::Observer, k)
+  empty!(results(observer, k))
+  return observer
+end
+
+function empty_results!(observer::Observer)
+  for k in keys(observer)
+    empty_results!(observer, k)
+  end
+  return observer
+end
+
+empty_results(observer::Observer, args...) = empty_results!(copy(observer), args...)
 
 results(observer::Observer, obsname::String) = 
   observer[obsname].results

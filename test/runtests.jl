@@ -106,6 +106,27 @@ end
   @test length( results(obs,"f")) == 100
 end  
 
+@testset "empty" begin
+  f(x) = 2x
+  function iterative(niter; observer!)
+    for k in 1:niter
+      update!(observer!, k)
+    end
+  end
+  obs0 = Observer(["f" => f])
+
+  obs1 = copy(obs0)
+  @test obs0 == obs1
+  iterative(10; observer! = obs1)
+  @test obs1 ≠ obs0
+  empty_results!(obs1)
+  @test obs1 == obs0
+
+  iterative(10; observer! = obs1)
+  obs1 = empty_results(obs0)
+  @test obs1 == obs0
+end
+
 @testset "Test element types of Array" begin
   f(k, x::Int, y::Float64) = x + y
   g(k, x) = k < 20 ? 0 : exp(im * x)
