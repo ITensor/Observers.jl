@@ -8,12 +8,18 @@ struct Observer <: AbstractDict{String,FunctionAndResults}
   data::Dict{String,FunctionAndResults}
 end
 
-function Observer(key_function_pairs::Vector)
-  d = Dict{String,FunctionAndResults}()
-  for (k, v) in key_function_pairs
+function Observer(key_function_pairs::Vector{<:Pair})
+  keys = first.(key_function_pairs)
+  functions = last.(key_function_pairs)
+  d = Dict{eltype(keys),FunctionAndResults}()
+  for (k, v) in zip(keys, functions)
     d[k] = (f = v, results = Any[])
   end
   return Observer(d)
+end
+
+function Observer(functions::Vector{<:Function})
+  return Observer(string.(functions) .=> functions)
 end
 
 struct MissingMethod end
@@ -23,16 +29,16 @@ Observer() = Observer(Dict{String,FunctionAndResults}())
 Base.length(obs::Observer) = length(obs.data)
 Base.iterate(obs::Observer, args...) = iterate(obs.data, args...)
 
-Base.getindex(obs::Observer, n) = obs.data[n]
+Base.getindex(obs::Observer, n) = obs.data[string(n)]
 Base.get(obs::Observer, n, x) = get(obs.data, n, x)
 
-Base.setindex!(obs::Observer, observable::Union{Nothing,Function}, obsname::String) = 
+Base.setindex!(obs::Observer, observable::Union{Nothing,Function}, obsname) = 
   Base.setindex!(obs.data, (f = observable, results = Any[]), obsname)
 
-Base.setindex!(obs::Observer, measurements::NamedTuple, obsname::String) = 
+Base.setindex!(obs::Observer, measurements::NamedTuple, obsname) = 
   Base.setindex!(obs.data, measurements, obsname)
 
-Base.setindex!(obs::Observer, measurements::Tuple{Union{Nothing,Function},Vector{Any}}, obsname::String) = 
+Base.setindex!(obs::Observer, measurements::Tuple{Union{Nothing,Function},Vector{Any}}, obsname) = 
   Base.setindex!(obs.data, (f = first(measurements), results = last(measurements)), obsname)
 
 Base.copy(observer::Observer) = Observer(copy(observer.data))
@@ -53,10 +59,10 @@ end
 
 empty_results(observer::Observer, args...) = empty_results!(copy(observer), args...)
 
-results(observer::Observer, obsname::String) = 
+results(observer::Observer, obsname) = 
   observer[obsname].results
 
-function set_results!(observer::Observer, results, obsname::String)
+function set_results!(observer::Observer, results, obsname)
   observer[obsname] = (f=observer[obsname].f, results=results)
   return observer
 end

@@ -81,6 +81,48 @@ using JLD2
   @test results(obs,"f5")[1] ≈ 19.0
 end
 
+@testset "Observer constructed from functions" begin
+  # Series for π/4
+  f(k) = (-1)^(k+1)/(2k-1)
+  
+  function my_iterative_function(niter; observer!, observe_step)
+    π_approx = 0.0
+    for n in 1:niter
+      π_approx += f(n)
+      if iszero(n % observe_step)
+        update!(observer!; π_approx = 4π_approx, iteration = n)
+      end
+    end
+    return 4π_approx
+  end
+  
+  # Measure the relative error from π at each iteration
+  err_from_π(; π_approx, kwargs...) = abs(π - π_approx) / π
+  
+  # Record which iteration we are at
+  iteration(; iteration, kwargs...) = iteration
+  obs = Observer([err_from_π, iteration])
+  
+  @test length(obs) == 2
+  @test results(obs, "err_from_π") == []
+  @test results(obs, "iteration") == []
+  
+  niter = 10000
+  observe_step = 1000
+  π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
+  
+  @test length(results(obs, "err_from_π")) == niter ÷ observe_step
+  @test length(results(obs, "iteration")) == niter ÷ observe_step
+  @test length(results(obs, err_from_π)) == niter ÷ observe_step
+  @test length(results(obs, iteration)) == niter ÷ observe_step
+  f1 = err_from_π
+  f2 = iteration
+  @test length(results(obs, f1)) == niter ÷ observe_step
+  @test length(results(obs, f2)) == niter ÷ observe_step
+  @test_throws KeyError results(obs, "f1")
+  @test_throws KeyError results(obs, "f2")
+end
+
 @testset "save only last value" begin
   f(x::Int, y::Float64) = x + y
   g(x::Int) = x
