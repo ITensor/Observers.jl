@@ -71,6 +71,29 @@ julia> results(obs, "Error")
 
 ```
 
+As a simplified syntax, you can just pass the functions themselves:
+```julia
+obs = Observer([err_from_π, iteration])
+```
+in which case the results can be accessed as follows:
+```julia
+results(obs, err_from_π) # Or: results(obs, "err_from_π")
+results(obs, iteration) # Or: results(obs, "iteration")
+```
+Note that Julia's internal representation of the function name will be stored in the
+Observer and used to query the results, so searching for results using the String representation
+will not follow aliasing:
+```julia
+const err_from_π_2 = err_from_π
+obs = Observer([err_from_π_2, iteration])
+results(obs, err_from_π)
+results(obs, "err_from_π")
+results(obs, err_from_π_2)
+results(obs, "err_from_π_2") # ERROR: KeyError: key "err_from_π_2" not found
+```
+In addition, for anonymous functions the string name will be a symbol generated internally
+by Julia.
+
 You can save and load Observers with packages like JLD2 (here we use the FileIO interface for JLD2):
 ```julia
 # save the results dictionary as a JLD
