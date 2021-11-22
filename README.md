@@ -92,7 +92,9 @@ results(obs, err_from_π_2)
 results(obs, "err_from_π_2") # ERROR: KeyError: key "err_from_π_2" not found
 ```
 In addition, for anonymous functions the string name will be a symbol generated internally
-by Julia.
+by Julia, so we would discourage you from passing an anonymous function directly to an Observer
+without specifying a string name yourself because it might make the results more difficult
+to access and interpret.
 
 You can save and load Observers with packages like JLD2 (here we use the FileIO interface for JLD2):
 ```julia
