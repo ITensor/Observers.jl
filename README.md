@@ -7,6 +7,8 @@ The Observers.jl package provides functionalities to record and track metrics of
 of a given function. It may be used to monitor convergence of optimization algorithms, to measure revelant observables in
 in numerical simulations (e.g. condensed matter physics, quantum simulation, quantum chemistry etc).
 
+## Basic Usage
+
 ```julia
 using Observers
 
@@ -71,6 +73,8 @@ julia> results(obs, "Error")
 
 ```
 
+## Basic Usage - Alternative Syntax
+
 As a simplified syntax, you can just pass the functions themselves:
 ```julia
 obs = Observer([err_from_π, iteration])
@@ -96,6 +100,8 @@ by Julia, so we would discourage you from passing an anonymous function directly
 without specifying a string name yourself because it might make the results more difficult
 to access and interpret.
 
+## Reading and Writing to Disk
+
 You can save and load Observers with packages like JLD2 (here we use the FileIO interface for JLD2):
 ```julia
 # save the results dictionary as a JLD
@@ -105,6 +111,8 @@ obs_loaded = Observer(load("results.jld2"))
 @show obs_loaded == obs
 @show results(obs_loaded, "Error") == results(obs, "Error")
 ```
+
+## Analyzing Results with DataFrames
 
 In addition, you can convert the results of an Observer into a DataFrame and analyze and manipulate the results that way:
 ```julia
