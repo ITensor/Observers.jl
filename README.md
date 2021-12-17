@@ -3,7 +3,7 @@
 
 # Observers.jl
 
-The Observers.jl package provides functionalities to record and track metrics of interests during the iterative evaluation
+The Observers.jl package provides functionalities to record and track metrics of interest during the iterative evaluation
 of a given function. It may be used to monitor convergence of optimization algorithms, to measure revelant observables in
 in numerical simulations (e.g. condensed matter physics, quantum simulation, quantum chemistry etc).
 
