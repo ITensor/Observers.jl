@@ -22,6 +22,14 @@ function Observer(functions::Vector{<:Function})
   return Observer(string.(functions) .=> functions)
 end
 
+function Observer(key_function_pairs::Pair...)
+  return Observer([key_function_pairs...])
+end
+
+function Observer(functions::Function...)
+  return Observer([functions...])
+end
+
 struct MissingMethod end
 
 Observer() = Observer(Dict{String,FunctionAndResults}())

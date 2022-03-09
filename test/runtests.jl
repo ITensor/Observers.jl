@@ -23,6 +23,7 @@ using JLD2
   
   # Record which iteration we are at
   iteration(; iteration, kwargs...) = iteration
+
   obs = Observer(["Error" => err_from_π, "Iteration" => iteration])
   
   @test length(obs) == 2
@@ -53,6 +54,44 @@ using JLD2
   
   @test results(obs,"nofunction") == []
   
+  #
+  # List syntax
+  #
+
+  obs = Observer("Error" => err_from_π, "Iteration" => iteration)
+  
+  @test length(obs) == 2
+  @test results(obs, "Error") == []
+  @test results(obs, "Iteration") == []
+  
+  niter = 10000
+  observe_step = 1000
+  π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
+  
+  for res in obs
+    @test length(last(last(res))) == niter ÷ observe_step
+  end
+
+  #
+  # Function list syntax
+  #
+
+  obs = Observer(err_from_π, iteration)
+  
+  @test length(obs) == 2
+  @test results(obs, err_from_π) == []
+  @test results(obs, "err_from_π") == []
+  @test results(obs, iteration) == []
+  @test results(obs, "iteration") == []
+  
+  niter = 10000
+  observe_step = 1000
+  π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
+  
+  for res in obs
+    @test length(last(last(res))) == niter ÷ observe_step
+  end
+
   f1(x::Int) = x^2
   f2(x::Int, y::Float64) = x + y
   f3(_,_,t::Tuple) = first(t)
