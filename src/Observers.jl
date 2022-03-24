@@ -118,6 +118,9 @@ function update!(obs::Observer, args...; kwargs...)
 end
 
 function update!(obs::Observer, f::Function, k, result)
+
+  isnothing(result) && return # do not include `nothing` in results
+
   if result isa eltype(obs[k].results) && !isempty(obs[k].results)
     update!(f, obs[k].results, result)
   elseif isempty(obs[k].results)

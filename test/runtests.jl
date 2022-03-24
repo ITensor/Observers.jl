@@ -237,6 +237,44 @@ end
   @test res["g"] isa Vector{Int}
 end
 
+@testset "Function Returning nothing" begin
+
+  function sumints(niter; observer!)
+    total = 0
+    for n in 1:niter
+      total += n
+      update!(observer!; total, iteration=n)
+    end
+    return total
+  end
+  
+  running_total(; total, kwargs...) = total
+
+  function every_other(; total, iteration, kwargs...) 
+    if iteration%2 == 0
+      return total
+    end
+  end
+  
+  obs = Observer(["RunningTotal" => running_total, 
+                  "EveryOther" => every_other
+                 ])
+
+  niter = 100
+  total = sumints(niter; observer! = obs)
+
+  eo = results(obs)["EveryOther"]
+  rt = results(obs)["RunningTotal"]
+
+  # Test that `nothing` does not appear in eo:
+  @test findfirst(isnothing,eo) == nothing
+
+  # Test that eo contains every other value of rt:
+  @test length(eo) == div(length(rt),2)
+  @test eo == rt[2:2:niter]
+
+end
+
 @testset "Conversion to DataFrames" begin
   f(k, x::Int, y::Float64) = x + y
   g(k, x) = k < 20 ? 0 : exp(im * x)
