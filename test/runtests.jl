@@ -243,7 +243,7 @@ end
     total = 0
     for n in 1:niter
       total += n
-      update!(observer!; total, iteration=n)
+      update!(observer!; total=total, iteration=n)
     end
     return total
   end
