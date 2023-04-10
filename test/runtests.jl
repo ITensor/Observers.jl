@@ -1,3 +1,4 @@
+using Compat
 using DataFrames
 using JLD2
 using Observers
@@ -23,7 +24,7 @@ using Test
   end
   
   # Measure the relative error from π at each iteration
-  err_from_π(; π_approx, kwargs...) = abs(π - π_approx) / π
+  err_from_π(; π_approx) = abs(π - π_approx) / π
   
   # Record which iteration we are at
   iteration(; iteration, kwargs...) = iteration
@@ -50,13 +51,15 @@ using Test
   end
   
   obs = Observer(["Error" => err_from_π, "Iteration" => iteration])
-  Observers.set_function!(obs, "nofunction", Returns(missing))
+  Observers.insert_function!(obs, "nofunction", Returns(missing))
+  Observers.insert_function!(obs, "Error²", (; π_approx) -> err_from_π(; π_approx)^2)
   
   niter = 10000
   observe_step = 1000
   π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
   
-  @test isequal(obs[!, "nofunction"], fill(missing, niter ÷ observe_step))
+  @test all(ismissing, obs.nofunction)
+  @test obs.Error .^ 2 == obs.Error²
   
   #
   # List syntax
@@ -430,6 +433,12 @@ end
   @test oc isa Observer
   @test colmetadata(oc, :a, "function") == sin
   @test colmetadata(oc, :b, "function") == cos
+
+  df = DataFrame(o)
+  @test colmetadata(df) == colmetadata(o)
+  @test df.a == o.a
+  @test df.b == o.b
+  @test df == o
 
   # TableMetadataTools.jl
   # https://github.com/JuliaData/TableMetadataTools.jl
