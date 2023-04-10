@@ -30,25 +30,30 @@ function insert_function!(observer::Observer, name, f; set_function!_kwargs...)
 end
 
 # Constructors
-Observer() = Observer(DataFrame())
 
-function Observer(name_function_pairs::Vector{<:Pair})
+# In general, fall back to `DataFrame` constructors.
+Observer(x; kwargs...) = Observer(DataFrame(x; kwargs...))
+
+Observer(; kwargs...) = Observer(DataFrame(; kwargs...))
+
+# Treat function column data as column metadata.
+function Observer(name_function_pairs::Vector{<:Pair{T,<:Function}}; kwargs...) where {T<:Union{Symbol,String}}
+  observer = Observer([first(name_function) => [] for name_function in name_function_pairs]; kwargs...)
   name_function_dict = Dict(name_function_pairs)
-  observer = Observer(DataFrame([name => [] for name in keys(name_function_dict)]))
   for name in keys(name_function_dict)
     set_function!(observer, name, name_function_dict[name])
   end
   return observer
 end
 
-function Observer(key_function_pairs::Pair...)
-  return Observer([key_function_pairs...])
+function Observer(key_function_pairs::Pair{T,<:Function}...; kwargs...) where {T<:Union{Symbol,String}}
+  return Observer(Pair{T,Function}[key_function_pairs...]; kwargs...)
 end
 
-function Observer(functions::Vector{<:Function})
-  return Observer(string.(functions) .=> functions)
+function Observer(functions::Vector{<:Function}; kwargs...)
+  return Observer(Pair{String,Function}[string(func) => func for func in functions]; kwargs...)
 end
 
-function Observer(functions::Function...)
-  return Observer([(string.(functions) .=> functions)...])
+function Observer(functions::Function...; kwargs...)
+  return Observer(Pair{String,Function}[string(func) => func for func in functions]; kwargs...)
 end
