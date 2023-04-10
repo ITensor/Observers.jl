@@ -15,7 +15,7 @@ function my_iterative_function(niter; observer!, observe_step)
 end
 
 # Measure the relative error from π at each iteration
-err_from_π(; π_approx, kwargs...) = abs(π - π_approx) / π
+err_from_π(; π_approx) = abs(π - π_approx) / π
 
 # Record which iteration we are at
 iteration(; iteration, kwargs...) = iteration
@@ -26,5 +26,5 @@ niter = 10000
 
 @show π_approx
 @show obs
-@show results(obs, "Iteration")
-@show results(obs, "Error")
+@show obs.Iteration
+@show obs.Error

@@ -8,6 +8,10 @@ using TableMetadataTools
 using TableOperations
 using Test
 
+@testset "Examples" begin
+  include(joinpath(pkgdir(Observers), "examples", "example1.jl"))
+end
+
 @testset "Observer" begin
   # Series for π/4
   f(k) = (-1)^(k + 1) / (2k - 1)
@@ -423,8 +427,6 @@ end
   @test oc_grouped[(; b=4)].b == [4]
 
   # https://dataframes.juliadata.org/stable/lib/metadata/
-  # TODO: Design an `observer_function[!]` or `get_function`/`set_function!`
-  # interface similar to `labels[!]` and `notes[!]` from `TableMetadataTools`.
   oc = copy(o)
   colmetadata!(oc, :a, "function", sin; style=:note)
   colmetadata!(oc, :b, "function", cos; style=:note)
