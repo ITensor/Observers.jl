@@ -1,7 +1,7 @@
 name = "Observers"
 uuid = "338f10d5-c7f1-4033-a7d1-f9dec39bcaa0"
 authors = ["Giacomo Torlai <gttorlai@amazon.com>", "Matthew Fishman <mfishman@flatironinstitute.org>"]
-version = "0.0.8"
+version = "0.1.0"
 
 [deps]
 Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
@@ -10,4 +10,8 @@ DataAPI = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 
 [compat]
-julia = "1.4"
+Accessors = "0.1.28"
+ConstructionBase = "1.5.1"
+DataAPI = "1.14.0"
+DataFrames = "1.5.0"
+julia = "1.6"
