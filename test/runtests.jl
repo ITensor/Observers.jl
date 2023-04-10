@@ -10,71 +10,71 @@ using Test
 
 @testset "Observer" begin
   # Series for π/4
-  f(k) = (-1)^(k+1)/(2k-1)
-  
+  f(k) = (-1)^(k + 1) / (2k - 1)
+
   function my_iterative_function(niter; observer!, observe_step)
     π_approx = 0.0
     for n in 1:niter
       π_approx += f(n)
       if iszero(n % observe_step)
-        update!(observer!; π_approx = 4π_approx, iteration = n)
+        update!(observer!; π_approx=4π_approx, iteration=n)
       end
     end
     return 4π_approx
   end
-  
+
   # Measure the relative error from π at each iteration
   err_from_π(; π_approx) = abs(π - π_approx) / π
-  
+
   # Record which iteration we are at
   iteration(; iteration, kwargs...) = iteration
 
   obs = Observer(["Error" => err_from_π, "Iteration" => iteration])
-  
+
   @test ncol(obs) == 2
   @test obs.Error == []
   @test obs.Iteration == []
-  
+
   niter = 10000
   observe_step = 1000
-  π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
-  
+  π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
+
   for res in eachcol(obs)
     @test length(res) == niter ÷ observe_step
   end
-  
+
   jldsave("outputdata.jld2"; obs)
   obs_load = load("outputdata.jld2", "obs")
-  
+
   for j in 1:nrow(obs_load)
     @test obs_load[j, :] == obs[j, :]
   end
-  
+
   obs = Observer(["Error" => err_from_π, "Iteration" => iteration])
   Observers.insert_function!(obs, "nofunction", Returns(missing))
   Observers.insert_function!(obs, "Error²", (; π_approx) -> err_from_π(; π_approx)^2)
-  
+
   niter = 10000
   observe_step = 1000
-  π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
-  
+  π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
+
   @test all(ismissing, obs.nofunction)
   @test obs.Error .^ 2 == obs.Error²
-  
+
   #
   # List syntax
   #
 
   obs = Observer("Error" => err_from_π, "Iteration" => iteration)
-  
+
   @test ncol(obs) == 2
   @test obs[!, "Error"] == []
   @test obs[!, "Iteration"] == []
-  
+
   niter = 10000
   observe_step = 1000
-  π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
-  
+  π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
+
   for res in eachcol(obs)
     @test length(res) == niter ÷ observe_step
   end
@@ -84,79 +84,78 @@ using Test
   #
 
   obs = Observer(err_from_π, iteration)
-  
+
   @test ncol(obs) == 2
   @test_broken obs[!, err_from_π] == []
   @test obs[!, "err_from_π"] == []
   @test_broken obs[!, iteration] == []
   @test obs[!, "iteration"] == []
-  
+
   niter = 10000
   observe_step = 1000
-  π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
-  
+  π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
+
   for res in eachcol(obs)
     @test length(res) == niter ÷ observe_step
   end
 
   f1(x::Int) = x^2
   f2(x::Int, y::Float64) = x + y
-  f3(_,_,t::Tuple) = first(t)
+  f3(_, _, t::Tuple) = first(t)
   f4(x::Int; a::Float64) = x * a
   f5(x::Int; a::Float64, b::Float64) = x * a + b
-  
-  
+
   function my_other_iterative_function(; observer!)
     k = 2
     x = k
     y = k * √2
-    t = (x+2*y,0,0)
+    t = (x + 2 * y, 0, 0)
     a = y^2
     b = 3.0
-    update!(observer!, x, y, t; a = a, b = b)
+    return update!(observer!, x, y, t; a=a, b=b)
   end
-  
+
   obs = Observer(["f1" => f1, "f2" => f2, "f3" => f3, "f4" => f4, "f5" => f5])
-  
-  my_other_iterative_function(; observer! = obs)
-  
+
+  my_other_iterative_function(; (observer!)=obs)
+
   @test obs[!, "f1"][1] ≈ 4.0
-  @test obs[!, "f2"][1] ≈ 2.0 + 2*√2
-  @test obs[!, "f3"][1] ≈ 2.0 + 4*√2 
+  @test obs[!, "f2"][1] ≈ 2.0 + 2 * √2
+  @test obs[!, "f3"][1] ≈ 2.0 + 4 * √2
   @test obs[!, "f4"][1] ≈ 16.0
   @test obs[!, "f5"][1] ≈ 19.0
 end
 
 @testset "Observer constructed from functions" begin
   # Series for π/4
-  f(k) = (-1)^(k+1)/(2k-1)
-  
+  f(k) = (-1)^(k + 1) / (2k - 1)
+
   function my_iterative_function(niter; observer!, observe_step)
     π_approx = 0.0
     for n in 1:niter
       π_approx += f(n)
       if iszero(n % observe_step)
-        update!(observer!; π_approx = 4π_approx, iteration = n)
+        update!(observer!; π_approx=4π_approx, iteration=n)
       end
     end
     return 4π_approx
   end
-  
+
   # Measure the relative error from π at each iteration
   err_from_π(; π_approx, kwargs...) = abs(π - π_approx) / π
-  
+
   # Record which iteration we are at
   iteration(; iteration, kwargs...) = iteration
   obs = Observer([err_from_π, iteration])
-  
+
   @test ncol(obs) == 2
   @test obs[!, "err_from_π"] == []
   @test obs[!, "iteration"] == []
-  
+
   niter = 10000
   observe_step = 1000
-  π_approx = my_iterative_function(niter; observer! = obs, observe_step = observe_step)
-  
+  π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
+
   @test length(obs[!, "err_from_π"]) == niter ÷ observe_step
   @test length(obs[!, "iteration"]) == niter ÷ observe_step
   @test_broken length(results(obs, err_from_π)) == niter ÷ observe_step
@@ -174,12 +173,12 @@ end
 @testset "save only last value" begin
   f(x::Int, y::Float64) = x + y
   g(x::Int) = x
-  
+
   # function Observers.update!(::typeof(g), results, result)
   #   empty!(results)
   #   push!(results, result)
   # end
-  
+
   function my_yet_another_iterative_function(niter::Int; observer!)
     for k in 1:niter
       x = k
@@ -187,14 +186,14 @@ end
       update!(observer!, x, y)
     end
   end
-  
+
   obs = Observer(["g" => g, "f" => f])
-  
-  my_yet_another_iterative_function(100; observer! = obs)
-  
+
+  my_yet_another_iterative_function(100; (observer!)=obs)
+
   @test length(obs[!, "g"]) == 100
   @test length(obs[!, "f"]) == 100
-end  
+end
 
 @testset "empty" begin
   f(x) = 2x
@@ -207,12 +206,12 @@ end
 
   obs1 = copy(obs0)
   @test obs0 == obs1
-  iterative(10; observer! = obs1)
+  iterative(10; (observer!)=obs1)
   @test obs1 ≠ obs0
   empty!(obs1)
   @test obs1 == obs0
 
-  iterative(10; observer! = obs1)
+  iterative(10; (observer!)=obs1)
   obs1 = empty!(copy(obs0))
   @test obs1 == obs0
 end
@@ -230,14 +229,14 @@ end
   end
 
   obs = Observer(["f" => f, "g" => g])
-  iterative_function(100; observer! = obs)
+  iterative_function(100; (observer!)=obs)
   @test length(obs.f) == 100
   @test length(obs.g) == 100
   @test obs.f isa Vector
   @test obs.g isa Vector
 
   obs = Observer(["f" => f, "g" => g])
-  iterative_function(10; observer! = obs)
+  iterative_function(10; (observer!)=obs)
   @test length(obs.f) == 10
   @test length(obs.g) == 10
   @test obs.f isa Vector
@@ -245,7 +244,6 @@ end
 end
 
 @testset "Function Returning nothing" begin
-
   function sumints(niter; observer!)
     total = 0
     for n in 1:niter
@@ -254,22 +252,20 @@ end
     end
     return total
   end
-  
+
   running_total(; total, kwargs...) = total
 
-  function every_other(; total, iteration, kwargs...) 
-    if iteration%2 == 0
+  function every_other(; total, iteration, kwargs...)
+    if iteration % 2 == 0
       return total
     end
     return missing
   end
-  
-  obs = Observer(["RunningTotal" => running_total, 
-                  "EveryOther" => every_other
-                 ])
+
+  obs = Observer(["RunningTotal" => running_total, "EveryOther" => every_other])
 
   niter = 100
-  total = sumints(niter; observer! = obs)
+  total = sumints(niter; (observer!)=obs)
 
   eo = obs.EveryOther
   rt = obs.RunningTotal
@@ -281,7 +277,6 @@ end
   @test sum(!ismissing, eo) == div(length(rt), 2)
   @test eo[2:2:niter] == rt[2:2:niter]
   @test all(ismissing, eo[1:2:niter])
-
 end
 
 @testset "Conversion to DataFrames" begin
@@ -295,7 +290,7 @@ end
     end
   end
   obs = Observer(["f" => f, "g" => g])
-  iterative_function(100; observer! = obs)
+  iterative_function(100; (observer!)=obs)
   df = DataFrame(obs)
   @test df.f == obs.f
   @test df.g == obs.g
@@ -335,9 +330,15 @@ end
   # TableOperations.jl
   @test Tables.columntable(TableOperations.select(:a)(o)) == (; a=[1, 2])
   @test DataFrame(TableOperations.select(:a)(o)) == DataFrame((; a=[1, 2]))
-  @test DataFrame(TableOperations.transform(a=x->Symbol(x))(o)) == DataFrame((; a=[Symbol(1), Symbol(2)], b=[3, 4]))
-  @test DataFrame(TableOperations.filter(x->Tables.getcolumn(x, :b) > 3)(o)) == DataFrame((; a=[2], b=[4]))
-  @test DataFrame(TableOperations.map(x->(a=Tables.getcolumn(x, :b) * 2, b=Tables.getcolumn(x, :a) * 2))(o)) == DataFrame((; a=[6, 8], b=[2, 4]))
+  @test DataFrame(TableOperations.transform(; a=x -> Symbol(x))(o)) ==
+    DataFrame((; a=[Symbol(1), Symbol(2)], b=[3, 4]))
+  @test DataFrame(TableOperations.filter(x -> Tables.getcolumn(x, :b) > 3)(o)) ==
+    DataFrame((; a=[2], b=[4]))
+  @test DataFrame(
+    TableOperations.map(x -> (a=Tables.getcolumn(x, :b) * 2, b=Tables.getcolumn(x, :a) * 2))(
+      o
+    ),
+  ) == DataFrame((; a=[6, 8], b=[2, 4]))
 
   @test copy(o) == o
   @test names(o) == ["a", "b"]
