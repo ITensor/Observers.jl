@@ -37,19 +37,19 @@ function my_iterative_function(niter; observer!, observe_step)
   for n in 1:niter
     π_approx += f(n)
     if iszero(n % observe_step)
-      update!(observer!; π_approx=4π_approx, iteration=n)
+      update!(observer!; iteration=n, π_approx=4π_approx)
     end
   end
   return 4π_approx
 end
 
+# Record the iteration
+iteration(; iteration) = iteration
+
 # Measure the relative error from π at each iteration
 error(; π_approx) = abs(π - π_approx) / π
 
-# Record which iteration we are at
-iteration(; iteration) = iteration
-
-obs = Observer(error, iteration)
+obs = Observer(iteration, error)
 
 niter = 10000
 
@@ -75,6 +75,7 @@ obs[!, string(error)] == obs.error # Access using function
 obs[!, Symbol(error)] == obs.error # Access using function
 
 #' You can perform various operations on an `Observer` like slicing:
+#+ term=true
 obs[4:6, :]
 
 #' See the DataFrames.jl documentation for more information on operations you can perform.
@@ -93,7 +94,7 @@ df[4:6, :]
 
 #' Alternatively, you can pass string names with the functions which will become
 #' the names of the columns of the Observer:
-#+
+#+ term=true
 obs = Observer("Iteration" => iteration, "Error" => error)
 
 #' in which case the results can be accessed from the given specified name:
@@ -104,7 +105,7 @@ obs.Iteration
 #' This is particularly useful if you pass anonymous function into the `Observer`,
 #' in which case the automatically generated name of the column would be randomly generated.
 #' For example:
-#+ term
+#+ term=true
 obs = Observer((; iteration) -> iteration, (; π_approx) -> abs(π - π_approx) / π)
 π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
 obs
@@ -124,7 +125,7 @@ obs[!, 2]
 #+ term=true
 iter = (; iteration) -> iteration
 err = (; π_approx) -> abs(π - π_approx) / π
-obs = Observer(err, iter)
+obs = Observer(iter, err)
 π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
 obs
 
