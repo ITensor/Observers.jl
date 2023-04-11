@@ -39,7 +39,9 @@ function insert_function!(observer::Observer, name, f::Function; set_function!_k
   return observer
 end
 
-function insert_function!(observer::Observer, name_function::Pair{<:Any,<:Function}; kwargs...)
+function insert_function!(
+  observer::Observer, name_function::Pair{<:Any,<:Function}; kwargs...
+)
   return insert_function!(observer, first(name_function), last(name_function); kwargs...)
 end
 
