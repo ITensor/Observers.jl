@@ -29,7 +29,9 @@ end
 # Errors if the column already exists.
 function insert_function!(observer::Observer, name, f::Function; set_function!_kwargs...)
   if name ∈ names(observer)
-    error("Trying to insert a new function with `insert_function!`, but a column with name `$(name)` already exists. Use `set_function!` if you want to replace the function of an existing column, or use a different name than the existing column names `$(names(observer))`.")
+    error(
+      "Trying to insert a new function with `insert_function!`, but a column with name `$(name)` already exists. Use `set_function!` if you want to replace the function of an existing column, or use a different name than the existing column names `$(names(observer))`.",
+    )
   end
   # Append a new column and then set the function.
   observer[!, name] = isempty(observer) ? Union{}[] : fill(missing, nrow(observer))
