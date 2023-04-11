@@ -51,12 +51,5 @@ function update!(
 )
   function_outputs = call_functions(observer, args...; call_function_kwargs, kwargs...)
   push!(observer, function_outputs; push!_kwargs...)
-  if isone(nrow(observer))
-    # This was the first row added, try to narrow the element type based
-    # on the first input.
-    for name in names(observer)
-      observer[!, name] = identity.(observer[!, name])
-    end
-  end
   return observer
 end

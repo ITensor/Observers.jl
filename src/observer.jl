@@ -37,8 +37,15 @@ Observer(x; kwargs...) = Observer(DataFrame(x; kwargs...))
 Observer(; kwargs...) = Observer(DataFrame(; kwargs...))
 
 # Treat function column data as column metadata.
-function Observer(name_function_pairs::Vector{<:Pair{T,<:Function}}; kwargs...) where {T<:Union{Symbol,String}}
-  observer = Observer([first(name_function) => [] for name_function in name_function_pairs]; kwargs...)
+# Default to empty columns with element type `Union{}`
+# so they get automatically promoted to the first type that gets pushed
+# into them.
+function Observer(
+  name_function_pairs::Vector{<:Pair{T,<:Function}}; kwargs...
+) where {T<:Union{Symbol,String}}
+  observer = Observer(
+    [first(name_function) => Union{}[] for name_function in name_function_pairs]; kwargs...
+  )
   name_function_dict = Dict(name_function_pairs)
   for name in keys(name_function_dict)
     set_function!(observer, name, name_function_dict[name])
@@ -46,14 +53,20 @@ function Observer(name_function_pairs::Vector{<:Pair{T,<:Function}}; kwargs...) 
   return observer
 end
 
-function Observer(key_function_pairs::Pair{T,<:Function}...; kwargs...) where {T<:Union{Symbol,String}}
+function Observer(
+  key_function_pairs::Pair{T,<:Function}...; kwargs...
+) where {T<:Union{Symbol,String}}
   return Observer(Pair{T,Function}[key_function_pairs...]; kwargs...)
 end
 
 function Observer(functions::Vector{<:Function}; kwargs...)
-  return Observer(Pair{String,Function}[string(func) => func for func in functions]; kwargs...)
+  return Observer(
+    Pair{String,Function}[string(func) => func for func in functions]; kwargs...
+  )
 end
 
 function Observer(functions::Function...; kwargs...)
-  return Observer(Pair{String,Function}[string(func) => func for func in functions]; kwargs...)
+  return Observer(
+    Pair{String,Function}[string(func) => func for func in functions]; kwargs...
+  )
 end

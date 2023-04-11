@@ -16,10 +16,7 @@ err_from_π(; π_approx) = abs(π - π_approx) / π
 
 @testset "Observers" begin
   @testset "Examples" begin
-    example_files = [
-      "example1.jl",
-      "README.jl",
-    ]
+    example_files = ["example1.jl", "README.jl"]
     for example_file in example_files
       include(joinpath(pkgdir(Observers), "examples", example_file))
     end
@@ -340,7 +337,9 @@ err_from_π(; π_approx) = abs(π - π_approx) / π
     @test DataFrame(TableOperations.filter(x -> Tables.getcolumn(x, :b) > 3)(o)) ==
       DataFrame((; a=[2], b=[4]))
     @test DataFrame(
-      TableOperations.map(x -> (a=Tables.getcolumn(x, :b) * 2, b=Tables.getcolumn(x, :a) * 2))(
+      TableOperations.map(
+        x -> (a=Tables.getcolumn(x, :b) * 2, b=Tables.getcolumn(x, :a) * 2)
+      )(
         o
       ),
     ) == DataFrame((; a=[6, 8], b=[2, 4]))

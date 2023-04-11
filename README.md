@@ -5,13 +5,30 @@
 
 # Observers.jl
 
+
+
 The Observers.jl package provides functionalities to record and track metrics of interest during the iterative evaluation
 of a given function. It may be used to monitor convergence of optimization algorithms, to measure revelant observables in
 in numerical simulations (e.g. condensed matter physics, quantum simulation, quantum chemistry etc).
 
 
 
+## News
+
+
+
+Observers.jl v0.1 has been released, which preserves the same basic constructor
+and `update!` interface but a new design of the `Observer` type, which now
+has the interface and functionality of a `DataFrame` from
+[DataFrames.jl](https://dataframes.juliadata.org/stable/). See the rest of
+this README, the examples directory, and the DataFrames.jl documentation
+to learn about how to use the new `Observer` type.
+
+
+
 ## Installation
+
+
 
 You can install this package through the Julia package manager:
 ```julia
@@ -26,14 +43,14 @@ julia> ] add Observers
 using Observers
 
 # Series for π/4
-f(k) = (-1)^(k+1)/(2k-1)
+f(k) = (-1)^(k + 1) / (2k - 1)
 
 function my_iterative_function(niter; observer!, observe_step)
   π_approx = 0.0
   for n in 1:niter
     π_approx += f(n)
     if iszero(n % observe_step)
-      update!(observer!; π_approx = 4π_approx, iteration = n)
+      update!(observer!; π_approx=4π_approx, iteration=n)
     end
   end
   return 4π_approx
@@ -140,6 +157,8 @@ obs[4:6, :]
 
 
 See the DataFrames.jl documentation for more information on operations you can perform.
+You will have to load DataFrames.jl with `using DataFrames` to access DataFrame
+functions.
 If you find functionality that is available for a `DataFrame` that doesn't work
 for an `Observer`, please let us know by raising an issue! You can always convert
 an `Observer` to a `DataFrame` in the meantime:
@@ -201,8 +220,8 @@ obs = Observer("Iteration" => iteration, "Error" => error)
 ```
 0×2 Observer
  Row │ Iteration  Error
-     │ Any        Any
-─────┴──────────────────
+     │ Union{}    Union{}
+─────┴────────────────────
 ```
 
 
@@ -212,10 +231,10 @@ in which case the results can be accessed from the given specified name:
 
 ```julia
 julia> obs.Error
-Any[]
+Union{}[]
 
 julia> obs.Iteration
-Any[]
+Union{}[]
 ```
 
 
@@ -299,9 +318,9 @@ julia> err = (; π_approx) -> abs(π - π_approx) / π
 
 julia> obs = Observer(err, iter)
 0×2 Observer
- Row │ #13  #10
-     │ Any  Any
-─────┴──────────
+ Row │ #13      #10
+     │ Union{}  Union{}
+─────┴──────────────────
 
 julia> π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
 3.1414926535900345
@@ -412,10 +431,10 @@ julia> obs = Observer(
        )
 0×2 Observer
  Row │ Iteration  Error
-     │ Any        Any
-─────┴──────────────────
+     │ Union{}    Union{}
+─────┴────────────────────
 
-julia> π_approx = my_iterative_function(niter; observer! = obs, observe_step = 1000)
+julia> π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
 3.1414926535900345
 
 julia> obs.Iteration
@@ -493,7 +512,7 @@ true
 
 
 
-This file was generated with [weave.jl](https://github.com/JunoLab/Weave.jl) with the following commands:
+This file was generated with [Weave.jl](https://github.com/JunoLab/Weave.jl) with the following commands:
 
 ```julia
 using Observers, Weave

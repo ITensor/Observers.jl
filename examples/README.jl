@@ -2,13 +2,22 @@
 #' [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 #' # Observers.jl
-#'
+
 #' The Observers.jl package provides functionalities to record and track metrics of interest during the iterative evaluation
 #' of a given function. It may be used to monitor convergence of optimization algorithms, to measure revelant observables in
 #' in numerical simulations (e.g. condensed matter physics, quantum simulation, quantum chemistry etc).
 
+#' ## News
+
+#' Observers.jl v0.1 has been released, which preserves the same basic constructor
+#' and `update!` interface but a new design of the `Observer` type, which now
+#' has the interface and functionality of a `DataFrame` from
+#' [DataFrames.jl](https://dataframes.juliadata.org/stable/). See the rest of
+#' this README, the examples directory, and the DataFrames.jl documentation
+#' to learn about how to use the new `Observer` type.
+
 #' ## Installation
-#'
+
 #' You can install this package through the Julia package manager:
 #' ```julia
 #' julia> ] add Observers
@@ -21,14 +30,14 @@
 using Observers
 
 # Series for π/4
-f(k) = (-1)^(k+1)/(2k-1)
+f(k) = (-1)^(k + 1) / (2k - 1)
 
 function my_iterative_function(niter; observer!, observe_step)
   π_approx = 0.0
   for n in 1:niter
     π_approx += f(n)
     if iszero(n % observe_step)
-      update!(observer!; π_approx = 4π_approx, iteration = n)
+      update!(observer!; π_approx=4π_approx, iteration=n)
     end
   end
   return 4π_approx
@@ -69,6 +78,8 @@ obs[!, Symbol(error)] == obs.error # Access using function
 obs[4:6, :]
 
 #' See the DataFrames.jl documentation for more information on operations you can perform.
+#' You will have to load DataFrames.jl with `using DataFrames` to access DataFrame
+#' functions.
 #' If you find functionality that is available for a `DataFrame` that doesn't work
 #' for an `Observer`, please let us know by raising an issue! You can always convert
 #' an `Observer` to a `DataFrame` in the meantime:
@@ -135,7 +146,7 @@ obs = Observer(
   "Iteration" => (; iteration) -> iteration,
   "Error" => (; π_approx) -> abs(π - π_approx) / π,
 )
-π_approx = my_iterative_function(niter; observer! = obs, observe_step = 1000)
+π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
 obs.Iteration
 obs.Error
 
