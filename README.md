@@ -21,7 +21,9 @@ Observers.jl v0.1 has been released, which preserves the same basic constructor
 and `update!` interface but a new design of the `Observer` type, which now
 has the interface and functionality of a `DataFrame` from
 [DataFrames.jl](https://dataframes.juliadata.org/stable/). See the rest of
-this README, the examples directory, and the DataFrames.jl documentation
+this [README](https://github.com/GTorlai/Observers.jl#readme), the [examples/](https://github.com/GTorlai/Observers.jl/tree/main/examples)
+and [test/](https://github.com/GTorlai/Observers.jl/tree/main/test) directories, and
+the [DataFrames.jl documentation](https://dataframes.juliadata.org/stable/)
 to learn about how to use the new `Observer` type.
 
 
@@ -151,7 +153,10 @@ julia> obs[4:6, :]
 ```
 
 
-See the DataFrames.jl documentation for more information on operations you can perform.
+See the [DataFrames.jl documentation](https://dataframes.juliadata.org/stable/)
+documentation for more information on operations you can perform,
+along with the [examples/](https://github.com/GTorlai/Observers.jl/tree/main/examples) and
+[test/](https://github.com/GTorlai/Observers.jl/tree/main/test) directory.
 You will have to load DataFrames.jl with `using DataFrames` to access DataFrame
 functions.
 If you find functionality that is available for a `DataFrame` that doesn't work
@@ -504,7 +509,8 @@ true
 
 
 
-This file was generated with [Weave.jl](https://github.com/JunoLab/Weave.jl) with the following commands:
+This [README](https://github.com/GTorlai/Observers.jl#readme) file was generated with
+[Weave.jl](https://github.com/JunoLab/Weave.jl) with the following commands:
 
 ```julia
 using Observers, Weave
