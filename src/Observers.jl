@@ -1,6 +1,6 @@
 module Observers
 
-export Observer, update!
+export Observer, update!, get_function, set_function!, insert_function!
 
 using Accessors
 using ConstructionBase
