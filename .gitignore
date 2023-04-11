@@ -1,3 +1,4 @@
 .*.swp
 *.jld2
 Manifest.toml
+*.csv
