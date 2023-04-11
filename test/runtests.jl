@@ -78,8 +78,6 @@ returns_test() = "test"
     observe_step = 1000
     π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
 
-    @show obs
-
     @test nrow(obs) == niter ÷ observe_step
     @test all(ismissing, obs.nofunction)
     @test obs.Error .^ 2 == obs.Error²
@@ -95,8 +93,6 @@ returns_test() = "test"
 
     obs2 = copy(obs)
     π_approx = my_iterative_function(niter; (observer!)=obs2, observe_step=observe_step)
-
-    @show obs2
 
     @test nrow(obs2) == 2nrow(obs)
     first_half = 1:(niter ÷ observe_step)
