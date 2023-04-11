@@ -418,6 +418,58 @@ julia> obs.Error
 ```
 
 
+## Accessing and modifying functions
+
+
+
+You can access and modify functions of an Observer with `get_function`, `set_function!`, and `insert_function!`:
+
+```julia
+julia> get_function(obs, "Iteration") == iter
+true
+
+julia> get_function(obs, "Error") == err
+true
+
+julia> set_function!(obs, "Error" => sin);
+
+julia> get_function(obs, "Error") == sin
+true
+
+julia> insert_function!(obs, "New column" => cos);
+
+julia> get_function(obs, "New column") == cos
+true
+
+julia> obs
+10×3 Observer
+ Row │ Iteration  Error        New column
+     │ Int64      Float64      Missing
+─────┼────────────────────────────────────
+   1 │      1000  0.00031831      missing
+   2 │      2000  0.000159155     missing
+   3 │      3000  0.000106103     missing
+   4 │      4000  7.95775e-5      missing
+   5 │      5000  6.3662e-5       missing
+   6 │      6000  5.30516e-5      missing
+   7 │      7000  4.54728e-5      missing
+   8 │      8000  3.97887e-5      missing
+   9 │      9000  3.53678e-5      missing
+  10 │     10000  3.1831e-5       missing
+```
+
+
+`set_function!` just updates the function of an existing column but doesn't create new columns,
+while `insert_function!` creates a new column and sets the function of that new column
+but won't update an existing column.
+For example, these will both throw errors:
+```julia
+set_function!(obs, "New column 2", cos)
+insert_function!(obs, "Error", cos)
+```
+
+
+
 Alternatively, if you define the `Observer` with column names to begin with,
 then you can get the results using the function names:
 

@@ -145,6 +145,27 @@ rename!(obs, ["Iteration", "Error"])
 obs.Iteration
 obs.Error
 
+#' ## Accessing and modifying functions
+
+#' You can access and modify functions of an Observer with `get_function`, `set_function!`, and `insert_function!`:
+#+ term=true
+get_function(obs, "Iteration") == iter
+get_function(obs, "Error") == err
+set_function!(obs, "Error" => sin);
+get_function(obs, "Error") == sin
+insert_function!(obs, "New column" => cos);
+get_function(obs, "New column") == cos
+obs
+
+#' `set_function!` just updates the function of an existing column but doesn't create new columns,
+#' while `insert_function!` creates a new column and sets the function of that new column
+#' but won't update an existing column.
+#' For example, these will both throw errors:
+#' ```julia
+#' set_function!(obs, "New column 2", cos)
+#' insert_function!(obs, "Error", cos)
+#' ```
+
 #' Alternatively, if you define the `Observer` with column names to begin with,
 #' then you can get the results using the function names:
 #+ term=true

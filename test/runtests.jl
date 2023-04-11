@@ -8,11 +8,14 @@ using TableMetadataTools
 using TableOperations
 using Test
 
-# Record the iteration
+# Example Observer functions to use in tests.
+# Need to define outside of `@testset` since the
+# `@testset` mangles the names of functions that
+# are defined in its scope.
 iteration(; iteration) = iteration
-
-# Measure the relative error from π at each iteration
 err_from_π(; π_approx) = abs(π - π_approx) / π
+nofunction() = missing
+returns_test() = "test"
 
 @testset "Observers" begin
   @testset "Examples" begin
@@ -59,15 +62,57 @@ err_from_π(; π_approx) = abs(π - π_approx) / π
     end
 
     obs = Observer(["Error" => err_from_π, "Iteration" => iteration])
-    Observers.insert_function!(obs, "nofunction", Returns(missing))
-    Observers.insert_function!(obs, "Error²", (; π_approx) -> err_from_π(; π_approx)^2)
+    insert_function!(obs, nofunction)
+    error_sqr = (; π_approx) -> err_from_π(; π_approx)^2
+    insert_function!(obs, "Error²", error_sqr)
+
+    @test names(obs) == ["Error", "Iteration", "nofunction", "Error²"]
+    @test get_function(obs, "Error") == err_from_π
+    @test get_function(obs, "nofunction") == nofunction
+    @test get_function(obs, "Error²") == error_sqr
+    for name in names(obs)
+      @test obs[!, name] == Union{}[]
+    end
 
     niter = 10000
     observe_step = 1000
     π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
 
+    @show obs
+
+    @test nrow(obs) == niter ÷ observe_step
     @test all(ismissing, obs.nofunction)
     @test obs.Error .^ 2 == obs.Error²
+
+    set_function!(obs, "Error" => Returns(12))
+    insert_function!(obs, returns_test)
+
+    @test get_function(obs, "Error") == Returns(12)
+    @test get_function(obs, "returns_test") == returns_test
+    @test all(ismissing, obs.returns_test)
+    @test_throws ErrorException insert_function!(obs, "Error", Returns(11))
+    @test_throws ArgumentError set_function!(obs, "New column", Returns(11))
+
+    obs2 = copy(obs)
+    π_approx = my_iterative_function(niter; (observer!)=obs2, observe_step=observe_step)
+
+    @show obs2
+
+    @test nrow(obs2) == 2nrow(obs)
+    first_half = 1:(niter ÷ observe_step)
+    second_half = (niter ÷ observe_step + 1):(2 * niter ÷ observe_step)
+    @test obs2.Error isa Vector{Float64}
+    @test obs2.Error[first_half] == obs.Error
+    @test all(==(12), obs2.Error[second_half])
+    @test obs2.Iteration isa Vector{Int}
+    @test obs2.Iteration[first_half] == obs.Iteration
+    @test obs2.Iteration[second_half] == obs.Iteration
+    @test obs2.Error² isa Vector{Float64}
+    @test obs2.Error²[first_half] == obs.Error²
+    @test obs2.Error²[second_half] == obs.Error²
+    @test obs2.returns_test isa Vector{Union{Missing,String}}
+    @test all(ismissing, obs2.returns_test[first_half])
+    @test all(==("test"), obs2.returns_test[second_half])
 
     #
     # List syntax

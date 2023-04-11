@@ -11,22 +11,38 @@ get_function(observer::Observer, name) = colmetadata(observer, name, "function")
 # Set the function of a column of the Observer.
 # Default to `style=:note`, so the metadata gets preserved through
 # verious `DataFrame` operations.
-function set_function!(observer::Observer, name, f; style=:note)
+function set_function!(observer::Observer, name, f::Function; style=:note)
   colmetadata!(observer, name, "function", f; style)
   return observer
+end
+
+function set_function!(observer::Observer, name_function::Pair{<:Any,<:Function}; kwargs...)
+  return set_function!(observer, first(name_function), last(name_function); kwargs...)
+end
+
+function set_function!(observer::Observer, f::Function; kwargs...)
+  return set_function!(observer, string(f), f; kwargs...)
 end
 
 # Insert a new function into the Observer by appending a new column
 # filled with `missing`.
 # Errors if the column already exists.
-function insert_function!(observer::Observer, name, f; set_function!_kwargs...)
+function insert_function!(observer::Observer, name, f::Function; set_function!_kwargs...)
   if name ∈ names(observer)
-    error("Trying to insert a new function, but column with name $(name) already exists.")
+    error("Trying to insert a new function with `insert_function!`, but a column with name `$(name)` already exists. Use `set_function!` if you want to replace the function of an existing column, or use a different name than the existing column names `$(names(observer))`.")
   end
   # Append a new column and then set the function.
-  observer[!, name] = fill(missing, nrow(observer))
+  observer[!, name] = isempty(observer) ? Union{}[] : fill(missing, nrow(observer))
   set_function!(observer, name, f; set_function!_kwargs...)
   return observer
+end
+
+function insert_function!(observer::Observer, name_function::Pair{<:Any,<:Function}; kwargs...)
+  return insert_function!(observer, first(name_function), last(name_function); kwargs...)
+end
+
+function insert_function!(observer::Observer, f::Function; kwargs...)
+  return insert_function!(observer, string(f), f; kwargs...)
 end
 
 # Constructors
