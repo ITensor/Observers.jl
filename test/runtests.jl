@@ -66,6 +66,10 @@ returns_test() = "test"
     error_sqr = (; π_approx) -> err_from_π(; π_approx)^2
     insert_function!(obs, "Error²", error_sqr)
 
+    # Check deprecation
+    @test_throws ErrorException results(obs)
+    @test_throws ErrorException results(obs, "Error")
+
     @test names(obs) == ["Error", "Iteration", "nofunction", "Error²"]
     @test get_function(obs, "Error") == err_from_π
     @test get_function(obs, "nofunction") == nofunction
@@ -173,6 +177,24 @@ returns_test() = "test"
     @test obs[!, "f3"][1] ≈ 2.0 + 4 * √2
     @test obs[!, "f4"][1] ≈ 16.0
     @test obs[!, "f5"][1] ≈ 19.0
+  end
+
+  @testset "Observer skip missing or nothing" begin
+    obs = Observer("x" => Returns(missing), "y" => Returns(missing))
+    @test isempty(obs)
+    update!(obs)
+    @test isempty(obs)
+    update!(obs; push!_kwargs=(; skip_all_missing=false))
+    @test nrow(obs) == 1
+    @test all(ismissing, obs[1, :])
+
+    obs = Observer("x" => Returns(nothing), "y" => Returns(nothing))
+    @test isempty(obs)
+    update!(obs)
+    @test isempty(obs)
+    update!(obs; push!_kwargs=(; skip_all_nothing=false))
+    @test nrow(obs) == 1
+    @test all(isnothing, obs[1, :])
   end
 
   @testset "Observer constructed from functions" begin
