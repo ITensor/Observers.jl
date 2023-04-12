@@ -66,6 +66,10 @@ returns_test() = "test"
     error_sqr = (; π_approx) -> err_from_π(; π_approx)^2
     insert_function!(obs, "Error²", error_sqr)
 
+    # Check deprecation
+    @test_throws ErrorException results(obs)
+    @test_throws ErrorException results(obs, "Error")
+
     @test names(obs) == ["Error", "Iteration", "nofunction", "Error²"]
     @test get_function(obs, "Error") == err_from_π
     @test get_function(obs, "nofunction") == nofunction
