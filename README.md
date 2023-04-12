@@ -7,9 +7,10 @@
 
 
 
-The Observers.jl package provides functionalities to record and track metrics of interest during the iterative evaluation
-of a given function. It may be used to monitor convergence of optimization algorithms, to measure revelant observables in
-in numerical simulations (e.g. condensed matter physics, quantum simulation, quantum chemistry etc).
+The Observers.jl package provides functionalities to record and track metrics of interest
+during the iterative evaluation of a given function. It may be used to monitor convergence
+of optimization algorithms, measure revelant observables in numerical simulations,
+print useful information from an iterative method, etc.
 
 
 
@@ -21,7 +22,8 @@ Observers.jl v0.1 has been released, which preserves the same basic constructor
 and `update!` interface but a new design of the `Observer` type, which now
 has the interface and functionality of a `DataFrame` from
 [DataFrames.jl](https://dataframes.juliadata.org/stable/). See the rest of
-this [README](https://github.com/GTorlai/Observers.jl#readme), the [examples/](https://github.com/GTorlai/Observers.jl/tree/main/examples)
+this [README](https://github.com/GTorlai/Observers.jl#readme), the
+[examples/](https://github.com/GTorlai/Observers.jl/tree/main/examples)
 and [test/](https://github.com/GTorlai/Observers.jl/tree/main/test) directories, and
 the [DataFrames.jl documentation](https://dataframes.juliadata.org/stable/)
 to learn about how to use the new `Observer` type.

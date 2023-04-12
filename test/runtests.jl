@@ -179,6 +179,24 @@ returns_test() = "test"
     @test obs[!, "f5"][1] ≈ 19.0
   end
 
+  @testset "Observer skip missing or nothing" begin
+    obs = Observer("x" => Returns(missing), "y" => Returns(missing))
+    @test isempty(obs)
+    update!(obs)
+    @test isempty(obs)
+    update!(obs; push!_kwargs=(; skip_all_missing=false))
+    @test nrow(obs) == 1
+    @test all(ismissing, obs[1, :])
+
+    obs = Observer("x" => Returns(nothing), "y" => Returns(nothing))
+    @test isempty(obs)
+    update!(obs)
+    @test isempty(obs)
+    update!(obs; push!_kwargs=(; skip_all_nothing=false))
+    @test nrow(obs) == 1
+    @test all(isnothing, obs[1, :])
+  end
+
   @testset "Observer constructed from functions" begin
     # Series for π/4
     f(k) = (-1)^(k + 1) / (2k - 1)

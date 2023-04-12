@@ -1,17 +1,12 @@
-function default_call_function_kwargs(::typeof(call_function))
-  return (;
-    ignore_unsupported_trailing_args=false,
-    ignore_unsupported_kwargs=false,
-  )
-end
-
 # Evaluate the function at the column with name `name`.
 # Optiononally ignores any unsupported trailing arguments and
 # unssuported keyword arguments that are pass to the function.
 function call_function(
   observer::Observer, name, args...; call_function_kwargs=(;), kwargs...
 )
-  call_function_kwargs = (; default_call_function_kwargs(call_function)..., call_function_kwargs...)
+  call_function_kwargs = (;
+    default_call_function_kwargs(call_function)..., call_function_kwargs...
+  )
   (; ignore_unsupported_trailing_args, ignore_unsupported_kwargs) = call_function_kwargs
   f = get_function(observer, name)
   if ignore_unsupported_trailing_args
@@ -21,6 +16,10 @@ function call_function(
     kwargs = remove_unsupported_kwargs(f, args, kwargs)
   end
   return f(args...; kwargs...)
+end
+
+function default_call_function_kwargs(::typeof(call_function))
+  return (; ignore_unsupported_trailing_args=false, ignore_unsupported_kwargs=false)
 end
 
 # Evaluate the function at each column to compute a new row.
@@ -35,18 +34,11 @@ function call_functions(observer::Observer, args...; call_function_kwargs=(;), k
   )
 end
 
-default_push!_kwargs(::typeof(update!)) = (; promote=true, skip_missing_rows=true, skip_nothing_rows=true)
-function default_call_function_kwargs(::typeof(update!))
-  return (; ignore_unsupported_trailing_args=true,
-    ignore_unsupported_kwargs=true
-  )
-end
-
 """
     update!(
       obs::Observer,
       args...;
-      push!_kwargs=(; promote=true, skip_missing_rows=true, skip_nothing_rows=true),
+      push!_kwargs=(; promote=true, skip_all_missing=true, skip_all_nothing=true),
       kwargs...,
     )
 
@@ -60,27 +52,33 @@ That can be disabled by setting `push!_kwargs=(; promote=false)`.
 
 Also, by default, rows that have all `missing` data or all `nothing`
 data don't get pushed into the `observer`. That can be disabled by setting
-`push!_kwargs=(; skip_missing_rows=false)` and/or `push!_kwargs=(; skip_nothing_rows=false)`.
+`push!_kwargs=(; skip_all_missing=false)` and/or `push!_kwargs=(; skip_all_nothing=false)`.
 """
 function update!(
-  observer::Observer,
-  args...;
-  push!_kwargs=(;),
-  call_function_kwargs=(;),
-  kwargs...,
+  observer::Observer, args...; push!_kwargs=(;), call_function_kwargs=(;), kwargs...
 )
   push!_kwargs = (; default_push!_kwargs(update!)..., push!_kwargs...)
-  skip_missing_rows = push!_kwargs.skip_missing_rows
-  skip_nothing_rows = push!_kwargs.skip_nothing_rows
-  push!_kwargs = Base.structdiff(push!_kwargs, (; skip_missing_rows, skip_nothing_rows))
-  call_function_kwargs = (; default_call_function_kwargs(update!)..., call_function_kwargs...)
+  skip_all_missing = push!_kwargs.skip_all_missing
+  skip_all_nothing = push!_kwargs.skip_all_nothing
+  push!_kwargs = Base.structdiff(push!_kwargs, (; skip_all_missing, skip_all_nothing))
+  call_function_kwargs = (;
+    default_call_function_kwargs(update!)..., call_function_kwargs...
+  )
   function_outputs = call_functions(observer, args...; call_function_kwargs, kwargs...)
-  if skip_missing_rows && all(ismissing, values(function_outputs))
+  if skip_all_missing && all(ismissing, values(function_outputs))
     return observer
   end
-  if skip_nothing_rows && all(isnothing, values(function_outputs))
+  if skip_all_nothing && all(isnothing, values(function_outputs))
     return observer
   end
   push!(observer, function_outputs; push!_kwargs...)
   return observer
+end
+
+function default_push!_kwargs(::typeof(update!))
+  return (; promote=true, skip_all_missing=true, skip_all_nothing=true)
+end
+
+function default_call_function_kwargs(::typeof(update!))
+  return (; ignore_unsupported_trailing_args=true, ignore_unsupported_kwargs=true)
 end
