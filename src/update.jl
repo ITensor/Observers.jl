@@ -7,7 +7,7 @@ function call_function(
   call_function_kwargs = (;
     default_call_function_kwargs(call_function)..., call_function_kwargs...
   )
-  (; ignore_unsupported_trailing_args, ignore_unsupported_kwargs) = call_function_kwargs
+  @compat (; ignore_unsupported_trailing_args, ignore_unsupported_kwargs) = call_function_kwargs
   f = get_function(observer, name)
   if ignore_unsupported_trailing_args
     args = remove_unsupported_trailing_args(f, args)

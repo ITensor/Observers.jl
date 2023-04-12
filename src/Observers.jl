@@ -5,6 +5,7 @@ export Observer, update!, get_function, set_function!, insert_function!
 export results
 
 using Accessors
+using Compat
 using ConstructionBase
 using DataFrames
 using DataAPI
