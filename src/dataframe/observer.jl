@@ -2,13 +2,13 @@
 # called an "observer".
 
 # In general, fall back to `DataFrame` constructors.
-observer_dataframe(args...; kwargs...) = DataFrame(args...; kwargs...)
+observer(args...; kwargs...) = DataFrame(args...; kwargs...)
 
 # Treat function column data as column metadata.
 # Default to empty columns with element type `Union{}`
 # so they get automatically promoted to the first type that gets pushed
 # into them.
-function observer_dataframe(
+function observer(
   name_function_pairs::Vector{<:Pair{T,<:Function}}; kwargs...
 ) where {T<:Union{Symbol,String}}
   df = DataFrame(
@@ -21,20 +21,20 @@ function observer_dataframe(
   return df
 end
 
-function observer_dataframe(
+function observer(
   key_function_pairs::Pair{T,<:Function}...; kwargs...
 ) where {T<:Union{Symbol,String}}
-  return observer_dataframe(Pair{T,Function}[key_function_pairs...]; kwargs...)
+  return observer(Pair{T,Function}[key_function_pairs...]; kwargs...)
 end
 
-function observer_dataframe(functions::Vector{<:Function}; kwargs...)
-  return observer_dataframe(
+function observer(functions::Vector{<:Function}; kwargs...)
+  return observer(
     Pair{String,Function}[string(func) => func for func in functions]; kwargs...
   )
 end
 
-function observer_dataframe(functions::Function...; kwargs...)
-  return observer_dataframe(
+function observer(functions::Function...; kwargs...)
+  return observer(
     Pair{String,Function}[string(func) => func for func in functions]; kwargs...
   )
 end

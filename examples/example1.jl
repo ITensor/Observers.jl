@@ -19,7 +19,7 @@ error(; π_approx) = abs(π - π_approx) / π
 
 # Record which iteration we are at
 iteration(; iteration, kwargs...) = iteration
-obs = Observer(iteration, error)
+obs = observer(iteration, error)
 
 niter = 10000
 π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)

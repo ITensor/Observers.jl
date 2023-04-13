@@ -496,7 +496,7 @@ returns_test() = "test"
     @test colmetadata(oc, :a, "function") == sin
     @test colmetadata(oc, :b, "function") == cos
     oc = Observer(sort(oc; rev=true))
-    @test oc isa Observer
+    @test oc isa DataFrame
     @test colmetadata(oc, :a, "function") == sin
     @test colmetadata(oc, :b, "function") == cos
 

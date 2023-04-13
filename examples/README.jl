@@ -10,15 +10,16 @@
 
 #' ## News
 
-#' Observers.jl v0.1 has been released, which preserves the same basic constructor
-#' and `update!` interface but a new design of the `Observer` type, which now
-#' has the interface and functionality of a `DataFrame` from
-#' [DataFrames.jl](https://dataframes.juliadata.org/stable/). See the rest of
-#' this [README](https://github.com/GTorlai/Observers.jl#readme), the
+#' Observers.jl v0.2 has been released, which preserves the same basic `update!`
+#' interface but a new design of the observer object, which is now
+#' now just a `DataFrame` from
+#' [DataFrames.jl](https://dataframes.juliadata.org/stable/). The basic constructor
+#' syntax is the same, though `Observer` has been deprecated in favor of `observer`.
+#' See the rest of this [README](https://github.com/GTorlai/Observers.jl#readme), the
 #' [examples/](https://github.com/GTorlai/Observers.jl/tree/main/examples)
 #' and [test/](https://github.com/GTorlai/Observers.jl/tree/main/test) directories, and
 #' the [DataFrames.jl documentation](https://dataframes.juliadata.org/stable/)
-#' to learn about how to use the new `Observer` type.
+#' to learn about how to use the new observer type.
 
 #' ## Installation
 
@@ -53,7 +54,7 @@ iteration(; iteration) = iteration
 # Measure the relative error from π at each iteration
 error(; π_approx) = abs(π - π_approx) / π
 
-obs = Observer(iteration, error)
+obs = observer(iteration, error)
 
 niter = 10000
 
@@ -61,14 +62,15 @@ niter = 10000
 #+ term=true
 π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
 
-#' Results will be saved in the `Observer`, which should act just like a `DataFrame` from the Julia
-#' package [DataFrames.jl](https://dataframes.juliadata.org/stable/). You can view the results
-#' as a table of data by printing it:
+#' Results will be saved in the observer, which is just a `DataFrame` from the Julia
+#' package [DataFrames.jl](https://dataframes.juliadata.org/stable/) but with
+#' functions associated with each column that get called to generate new rows
+#' of the data frame. You can view the results as a table of data by printing it:
 #+ term=true
 obs
 
 #' Columns store the results from each function that was passed, which can be accessed
-#' in any way that columns of a `DataFrame` can be accessed:
+#' with the standard `DataFrame` interface:
 #+ term=true
 obs.error
 obs[!, "error"] == obs.error # DataFrames view access syntax
@@ -78,7 +80,7 @@ obs[:, :error] == obs.error # Can use Symbols
 obs[!, string(error)] == obs.error # Access using function
 obs[!, Symbol(error)] == obs.error # Access using function
 
-#' You can perform various operations on an `Observer` like slicing:
+#' You can perform various operations like slicing:
 #+ term=true
 obs[4:6, :]
 
@@ -88,32 +90,24 @@ obs[4:6, :]
 #' [test/](https://github.com/GTorlai/Observers.jl/tree/main/test) directory.
 #' You will have to load DataFrames.jl with `using DataFrames` to access DataFrame
 #' functions.
-#' If you find functionality that is available for a `DataFrame` that doesn't work
-#' for an `Observer`, please let us know by raising an issue! You can always convert
-#' an `Observer` to a `DataFrame` in the meantime:
-#+ term=true
-using DataFrames
-df = DataFrame(obs)
-df.error
-df[4:6, :]
 
 #' ## Custom column names
 
 #' Alternatively, you can pass string names with the functions which will become
-#' the names of the columns of the Observer:
+#' the names of the columns of the observer:
 #+ term=true
-obs = Observer("Iteration" => iteration, "Error" => error)
+obs = observer("Iteration" => iteration, "Error" => error)
 
 #' in which case the results can be accessed from the given specified name:
 #+ term=true
 obs.Error
 obs.Iteration
 
-#' This is particularly useful if you pass anonymous function into the `Observer`,
+#' This is particularly useful if you pass anonymous functions into the observer,
 #' in which case the automatically generated name of the column would be randomly generated.
 #' For example:
 #+ term=true
-obs = Observer((; iteration) -> iteration, (; π_approx) -> abs(π - π_approx) / π)
+obs = observer((; iteration) -> iteration, (; π_approx) -> abs(π - π_approx) / π)
 π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
 obs
 
@@ -122,7 +116,7 @@ obs
 
 #' This will make the results harder to access by name, but you can still use
 #' positional information since the columns are ordered based on how
-#' the Observer was defined:
+#' the observer was defined:
 #+ term=true
 obs[!, 1]
 obs[!, 2]
@@ -132,24 +126,33 @@ obs[!, 2]
 #+ term=true
 iter = (; iteration) -> iteration
 err = (; π_approx) -> abs(π - π_approx) / π
-obs = Observer(iter, err)
+obs = observer(iter, err)
 π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
 obs
 
-#' Then, you can use the variables that the functions were stored in to obtain the results:
+#' You can use the functions themselves to access results, as long as you convert
+#' them to strings or symbols:
 #+ term=true
 obs[!, string(iter)]
-obs[!, string(err)]
+obs[!, Symbol(err)]
 
-#' You can also rename the columns to more desirable names:
+#' You can also rename the columns to more desirable names using the `rename!`
+#' function from `DataFrames`:
 #+ term=true
+using DataFrames
 rename!(obs, ["Iteration", "Error"])
 obs.Iteration
 obs.Error
 
+#' Column functions will be preserved even if the columns are renamed (and in
+#' any other operation in which DataFrames.jl preserves so-called `:note`-style
+#' metadata, see the
+#' [DataFrames.jl documentation on metadata](https://dataframes.juliadata.org/stable/lib/metadata/)
+#' for more details.
+
 #' ## Accessing and modifying functions
 
-#' You can access and modify functions of an Observer with `get_function`, `set_function!`, and `insert_function!`:
+#' You can access and modify functions of an observer with `get_function`, `set_function!`, and `insert_function!`:
 #+ term=true
 get_function(obs, "Iteration") == iter
 get_function(obs, "Error") == err
@@ -168,10 +171,10 @@ obs
 #' insert_function!(obs, "Error", cos)
 #' ```
 
-#' Alternatively, if you define the `Observer` with column names to begin with,
+#' Alternatively, if you define the observer with column names to begin with,
 #' then you can get the results using the function names:
 #+ term=true
-obs = Observer(
+obs = observer(
   "Iteration" => (; iteration) -> iteration,
   "Error" => (; π_approx) -> abs(π - π_approx) / π,
 )
@@ -181,12 +184,12 @@ obs.Error
 
 #' ## Reading and Writing to Disk
 
-#' You can save and load Observers with packages like [JLD2.jl](https://github.com/JuliaIO/JLD2.jl),
+#' You can save and load observers with packages like [JLD2.jl](https://github.com/JuliaIO/JLD2.jl),
 #' or any other packages you like:
 #+ results="hidden"
 using JLD2
 jldsave("results.jld2"; obs)
-obs_loaded = Observer(load("results.jld2", "obs"))
+obs_loaded = load("results.jld2", "obs")
 #+ term=true
 obs_loaded == obs
 obs_loaded.Error == obs.Error
@@ -197,7 +200,7 @@ obs_loaded.Error == obs.Error
 #+ results="hidden"
 using CSV
 CSV.write("results.csv", obs)
-obs_loaded = Observer(CSV.File("results.csv"))
+obs_loaded = DataFrame(CSV.File("results.csv"))
 #+ term=true
 obs_loaded == obs
 obs_loaded.Error == obs.Error
