@@ -184,7 +184,7 @@ returns_test() = "test"
     @test isempty(obs)
     update!(obs)
     @test isempty(obs)
-    update!(obs; push!_kwargs=(; skip_all_missing=false))
+    update!(obs; update!_kwargs=(; skip_all_missing=false))
     @test nrow(obs) == 1
     @test all(ismissing, obs[1, :])
 
@@ -192,7 +192,7 @@ returns_test() = "test"
     @test isempty(obs)
     update!(obs)
     @test isempty(obs)
-    update!(obs; push!_kwargs=(; skip_all_nothing=false))
+    update!(obs; update!_kwargs=(; skip_all_nothing=false))
     @test nrow(obs) == 1
     @test all(isnothing, obs[1, :])
   end

@@ -11,7 +11,7 @@ using DataFrames
 using DataAPI
 
 include("base/method_utils.jl")
-include("abstractdataframe/observer_dataframe.jl")
+include("abstractdataframe/column_functions.jl")
 include("abstractdataframe/update.jl")
 include("dataframe/observer_dataframe.jl")
 include("abstractobserver/abstractobserver.jl")

@@ -9,7 +9,9 @@ function set_function!(df::AbstractDataFrame, name, f::Function; style=:note)
   return df
 end
 
-function set_function!(df::AbstractDataFrame, name_function::Pair{<:Any,<:Function}; kwargs...)
+function set_function!(
+  df::AbstractDataFrame, name_function::Pair{<:Any,<:Function}; kwargs...
+)
   return set_function!(df, first(name_function), last(name_function); kwargs...)
 end
 
@@ -26,8 +28,8 @@ function insert_function!(df::AbstractDataFrame, name, f::Function; set_function
       "Trying to insert a new function with `insert_function!`, but a column with name `$(name)` already exists. Use `set_function!` if you want to replace the function of an existing column, or use a different name than the existing column names `$(names(df))`.",
     )
   end
-  # Append a new column and then set the function.
-  df[!, name] = isempty(df) ? Union{}[] : fill(missing, nrow(df))
+  # Append a new column and then set the function of that column.
+  insertcols!(df, name => isempty(df) ? Union{}[] : missing)
   set_function!(df, name, f; set_function!_kwargs...)
   return df
 end
