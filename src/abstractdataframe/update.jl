@@ -2,14 +2,14 @@
 # Optiononally ignores any unsupported trailing arguments and
 # unssuported keyword arguments that are pass to the function.
 function call_function(
-  observer::Observer, name, args...; call_function_kwargs=(;), kwargs...
+  df::AbstractDataFrame, name, args...; call_function_kwargs=(;), kwargs...
 )
   call_function_kwargs = (;
     default_call_function_kwargs(call_function)..., call_function_kwargs...
   )
   @compat (; ignore_unsupported_trailing_args, ignore_unsupported_kwargs) =
     call_function_kwargs
-  f = get_function(observer, name)
+  f = get_function(df, name)
   if ignore_unsupported_trailing_args
     args = remove_unsupported_trailing_args(f, args)
   end
@@ -26,24 +26,24 @@ end
 # Evaluate the function at each column to compute a new row.
 # Optionally ignores any unsupported trailing arguments and
 # unssuported keyword arguments that are pass to the function.
-function call_functions(observer::Observer, args...; call_function_kwargs=(;), kwargs...)
+function call_functions(df::AbstractDataFrame, args...; call_function_kwargs=(;), kwargs...)
   return Dict(
-    map(names(observer)) do name
+    map(names(df)) do name
       return name =>
-        call_function(observer, name, args...; call_function_kwargs, kwargs...)
+        call_function(df, name, args...; call_function_kwargs, kwargs...)
     end,
   )
 end
 
 """
     update!(
-      obs::Observer,
+      df::AbstractDataFrame,
       args...;
       push!_kwargs=(; promote=true, skip_all_missing=true, skip_all_nothing=true),
       kwargs...,
     )
 
-Update the observer by executing the functions stored on each column,
+Update the data frame `df` by executing the functions stored on each column,
 passing the arguments `args...` and keyword arguments `kwargs...`
 to each function.
 
@@ -52,12 +52,13 @@ if new data can't be converted to the current data type of the column.
 That can be disabled by setting `push!_kwargs=(; promote=false)`.
 
 Also, by default, rows that have all `missing` data or all `nothing`
-data don't get pushed into the `observer`. That can be disabled by setting
+data don't get pushed into the `df`. That can be disabled by setting
 `push!_kwargs=(; skip_all_missing=false)` and/or `push!_kwargs=(; skip_all_nothing=false)`.
 """
 function update!(
-  observer::Observer, args...; push!_kwargs=(;), call_function_kwargs=(;), kwargs...
+  df::AbstractDataFrame, args...; push!_kwargs=(;), call_function_kwargs=(;), kwargs...
 )
+  # TODO: Replace with `update!_kwargs`!
   push!_kwargs = (; default_push!_kwargs(update!)..., push!_kwargs...)
   skip_all_missing = push!_kwargs.skip_all_missing
   skip_all_nothing = push!_kwargs.skip_all_nothing
@@ -65,15 +66,15 @@ function update!(
   call_function_kwargs = (;
     default_call_function_kwargs(update!)..., call_function_kwargs...
   )
-  function_outputs = call_functions(observer, args...; call_function_kwargs, kwargs...)
+  function_outputs = call_functions(df, args...; call_function_kwargs, kwargs...)
   if skip_all_missing && all(ismissing, values(function_outputs))
-    return observer
+    return df
   end
   if skip_all_nothing && all(isnothing, values(function_outputs))
-    return observer
+    return df
   end
-  push!(observer, function_outputs; push!_kwargs...)
-  return observer
+  push!(df, function_outputs; push!_kwargs...)
+  return df
 end
 
 function default_push!_kwargs(::typeof(update!))
