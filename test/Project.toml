@@ -2,5 +2,6 @@
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"
