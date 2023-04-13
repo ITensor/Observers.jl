@@ -10,10 +10,13 @@ using ConstructionBase
 using DataFrames
 using DataAPI
 
-include("method_utils.jl")
-include("observer.jl")
-include("dataframes_interface.jl")
-include("update.jl")
-include("deprecated.jl")
+include("base/method_utils.jl")
+include("abstractdataframe/column_functions.jl")
+include("abstractdataframe/update.jl")
+include("dataframe/observer_dataframe.jl")
+include("abstractobserver/abstractobserver.jl")
+include("abstractobserver/abstractdataframe_interface.jl")
+include("abstractobserver/deprecated.jl")
+include("observer/observer.jl")
 
 end # module
