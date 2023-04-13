@@ -1,11 +1,6 @@
 using Compat
 using DataFrames
-using JLD2
 using Observers
-using SplitApplyCombine
-using Statistics
-using TableMetadataTools
-using TableOperations
 using Test
 
 # Example Observer functions to use in tests.
@@ -25,6 +20,10 @@ returns_test() = "test"
     end
   end
 
+  @testset "Deprecated" begin
+    include("deprecated.jl")
+  end
+
   @testset "Observer" begin
     # Series for π/4
     f(k) = (-1)^(k + 1) / (2k - 1)
@@ -40,7 +39,7 @@ returns_test() = "test"
       return 4π_approx
     end
 
-    obs = Observer(["Error" => err_from_π, "Iteration" => iteration])
+    obs = observer(["Error" => err_from_π, "Iteration" => iteration])
 
     @test ncol(obs) == 2
     @test obs.Error == []
@@ -54,14 +53,7 @@ returns_test() = "test"
       @test length(res) == niter ÷ observe_step
     end
 
-    jldsave("outputdata.jld2"; obs)
-    obs_load = load("outputdata.jld2", "obs")
-
-    for j in 1:nrow(obs_load)
-      @test obs_load[j, :] == obs[j, :]
-    end
-
-    obs = Observer(["Error" => err_from_π, "Iteration" => iteration])
+    obs = observer(["Error" => err_from_π, "Iteration" => iteration])
     insert_function!(obs, nofunction)
     error_sqr = (; π_approx) -> err_from_π(; π_approx)^2
     insert_function!(obs, "Error²", error_sqr)
@@ -118,7 +110,7 @@ returns_test() = "test"
     # List syntax
     #
 
-    obs = Observer("Error" => err_from_π, "Iteration" => iteration)
+    obs = observer("Error" => err_from_π, "Iteration" => iteration)
 
     @test ncol(obs) == 2
     @test obs[!, "Error"] == []
@@ -136,7 +128,7 @@ returns_test() = "test"
     # Function list syntax
     #
 
-    obs = Observer(err_from_π, iteration)
+    obs = observer(err_from_π, iteration)
 
     @test ncol(obs) == 2
     @test_broken obs[!, err_from_π] == []
@@ -168,7 +160,7 @@ returns_test() = "test"
       return update!(observer!, x, y, t; a=a, b=b)
     end
 
-    obs = Observer(["f1" => f1, "f2" => f2, "f3" => f3, "f4" => f4, "f5" => f5])
+    obs = observer(["f1" => f1, "f2" => f2, "f3" => f3, "f4" => f4, "f5" => f5])
 
     my_other_iterative_function(; (observer!)=obs)
 
@@ -180,7 +172,7 @@ returns_test() = "test"
   end
 
   @testset "Observer skip missing or nothing" begin
-    obs = Observer("x" => Returns(missing), "y" => Returns(missing))
+    obs = observer("x" => Returns(missing), "y" => Returns(missing))
     @test isempty(obs)
     update!(obs)
     @test isempty(obs)
@@ -188,7 +180,7 @@ returns_test() = "test"
     @test nrow(obs) == 1
     @test all(ismissing, obs[1, :])
 
-    obs = Observer("x" => Returns(nothing), "y" => Returns(nothing))
+    obs = observer("x" => Returns(nothing), "y" => Returns(nothing))
     @test isempty(obs)
     update!(obs)
     @test isempty(obs)
@@ -212,7 +204,7 @@ returns_test() = "test"
       return 4π_approx
     end
 
-    obs = Observer([err_from_π, iteration])
+    obs = observer([err_from_π, iteration])
 
     @test ncol(obs) == 2
     @test obs[!, "err_from_π"] == []
@@ -253,7 +245,7 @@ returns_test() = "test"
       end
     end
 
-    obs = Observer(["g" => g, "f" => f])
+    obs = observer(["g" => g, "f" => f])
 
     my_yet_another_iterative_function(100; (observer!)=obs)
 
@@ -268,7 +260,7 @@ returns_test() = "test"
         update!(observer!, k)
       end
     end
-    obs0 = Observer(["f" => f])
+    obs0 = observer(["f" => f])
 
     obs1 = copy(obs0)
     @test obs0 == obs1
@@ -294,14 +286,14 @@ returns_test() = "test"
       end
     end
 
-    obs = Observer(["f" => f, "g" => g])
+    obs = observer(["f" => f, "g" => g])
     iterative_function(100; (observer!)=obs)
     @test length(obs.f) == 100
     @test length(obs.g) == 100
     @test obs.f isa Vector{Float64}
     @test obs.g isa Vector{ComplexF64}
 
-    obs = Observer(["f" => f, "g" => g])
+    obs = observer(["f" => f, "g" => g])
     iterative_function(10; (observer!)=obs)
     @test length(obs.f) == 10
     @test length(obs.g) == 10
@@ -328,7 +320,7 @@ returns_test() = "test"
       return missing
     end
 
-    obs = Observer(["RunningTotal" => running_total, "EveryOther" => every_other])
+    obs = observer(["RunningTotal" => running_total, "EveryOther" => every_other])
 
     niter = 100
     total = sumints(niter; (observer!)=obs)
