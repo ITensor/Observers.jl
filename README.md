@@ -18,15 +18,16 @@ print useful information from an iterative method, etc.
 
 
 
-Observers.jl v0.1 has been released, which preserves the same basic constructor
-and `update!` interface but a new design of the `Observer` type, which now
-has the interface and functionality of a `DataFrame` from
-[DataFrames.jl](https://dataframes.juliadata.org/stable/). See the rest of
-this [README](https://github.com/GTorlai/Observers.jl#readme), the
+Observers.jl v0.2 has been released, which preserves the same basic `update!`
+interface but a new design of the observer object, which is now
+now just a `DataFrame` from
+[DataFrames.jl](https://dataframes.juliadata.org/stable/). The basic constructor
+syntax is the same, though `Observer` has been deprecated in favor of `observer`.
+See the rest of this [README](https://github.com/GTorlai/Observers.jl#readme), the
 [examples/](https://github.com/GTorlai/Observers.jl/tree/main/examples)
 and [test/](https://github.com/GTorlai/Observers.jl/tree/main/test) directories, and
 the [DataFrames.jl documentation](https://dataframes.juliadata.org/stable/)
-to learn about how to use the new `Observer` type.
+to learn about how to use the new observer type.
 
 
 
@@ -66,7 +67,7 @@ iteration(; iteration) = iteration
 # Measure the relative error from π at each iteration
 error(; π_approx) = abs(π - π_approx) / π
 
-obs = Observer(iteration, error)
+obs = observer(iteration, error)
 
 niter = 10000
 ```
@@ -81,13 +82,14 @@ julia> π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=10
 ```
 
 
-Results will be saved in the `Observer`, which should act just like a `DataFrame` from the Julia
-package [DataFrames.jl](https://dataframes.juliadata.org/stable/). You can view the results
-as a table of data by printing it:
+Results will be saved in the observer, which is just a `DataFrame` from the Julia
+package [DataFrames.jl](https://dataframes.juliadata.org/stable/) but with
+functions associated with each column that get called to generate new rows
+of the data frame. You can view the results as a table of data by printing it:
 
 ```julia
 julia> obs
-10×2 Observer
+10×2 DataFrame
  Row │ iteration  error
      │ Int64      Float64
 ─────┼────────────────────────
@@ -105,7 +107,7 @@ julia> obs
 
 
 Columns store the results from each function that was passed, which can be accessed
-in any way that columns of a `DataFrame` can be accessed:
+with the standard `DataFrame` interface:
 
 ```julia
 julia> obs.error
@@ -141,7 +143,7 @@ true
 ```
 
 
-You can perform various operations on an `Observer` like slicing:
+You can perform various operations like slicing:
 
 ```julia
 julia> obs[4:6, :]
@@ -161,51 +163,7 @@ along with the [examples/](https://github.com/GTorlai/Observers.jl/tree/main/exa
 [test/](https://github.com/GTorlai/Observers.jl/tree/main/test) directory.
 You will have to load DataFrames.jl with `using DataFrames` to access DataFrame
 functions.
-If you find functionality that is available for a `DataFrame` that doesn't work
-for an `Observer`, please let us know by raising an issue! You can always convert
-an `Observer` to a `DataFrame` in the meantime:
 
-```julia
-julia> using DataFrames
-
-julia> df = DataFrame(obs)
-10×2 DataFrame
- Row │ iteration  error
-     │ Int64      Float64
-─────┼────────────────────────
-   1 │      1000  0.00031831
-   2 │      2000  0.000159155
-   3 │      3000  0.000106103
-   4 │      4000  7.95775e-5
-   5 │      5000  6.3662e-5
-   6 │      6000  5.30516e-5
-   7 │      7000  4.54728e-5
-   8 │      8000  3.97887e-5
-   9 │      9000  3.53678e-5
-  10 │     10000  3.1831e-5
-
-julia> df.error
-10-element Vector{Float64}:
- 0.0003183098066059948
- 0.0001591549331452938
- 0.00010610329244741256
- 7.957747030096378e-5
- 6.366197660078155e-5
- 5.305164733068067e-5
- 4.54728406537879e-5
- 3.978873562176942e-5
- 3.536776502730045e-5
- 3.18309885415475e-5
-
-julia> df[4:6, :]
-3×2 DataFrame
- Row │ iteration  error
-     │ Int64      Float64
-─────┼───────────────────────
-   1 │      4000  7.95775e-5
-   2 │      5000  6.3662e-5
-   3 │      6000  5.30516e-5
-```
 
 
 ## Custom column names
@@ -213,11 +171,11 @@ julia> df[4:6, :]
 
 
 Alternatively, you can pass string names with the functions which will become
-the names of the columns of the Observer:
+the names of the columns of the observer:
 
 ```julia
-julia> obs = Observer("Iteration" => iteration, "Error" => error)
-0×2 Observer
+julia> obs = observer("Iteration" => iteration, "Error" => error)
+0×2 DataFrame
  Row │ Iteration  Error
      │ Union{}    Union{}
 ─────┴────────────────────
@@ -235,13 +193,13 @@ Union{}[]
 ```
 
 
-This is particularly useful if you pass anonymous function into the `Observer`,
+This is particularly useful if you pass anonymous functions into the observer,
 in which case the automatically generated name of the column would be randomly generated.
 For example:
 
 ```julia
-julia> obs = Observer((; iteration) -> iteration, (; π_approx) -> abs(π - π_approx) / π)
-0×2 Observer
+julia> obs = observer((; iteration) -> iteration, (; π_approx) -> abs(π - π_approx) / π)
+0×2 DataFrame
  Row │ #4       #6
      │ Union{}  Union{}
 ─────┴──────────────────
@@ -250,7 +208,7 @@ julia> π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=10
 3.1414926535900345
 
 julia> obs
-10×2 Observer
+10×2 DataFrame
  Row │ #4     #6
      │ Int64  Float64
 ─────┼────────────────────
@@ -274,7 +232,7 @@ You can see that the names of the functions are automatically generated by Julia
 
 This will make the results harder to access by name, but you can still use
 positional information since the columns are ordered based on how
-the Observer was defined:
+the observer was defined:
 
 ```julia
 julia> obs[!, 1]
@@ -315,8 +273,8 @@ julia> iter = (; iteration) -> iteration
 julia> err = (; π_approx) -> abs(π - π_approx) / π
 #13 (generic function with 1 method)
 
-julia> obs = Observer(iter, err)
-0×2 Observer
+julia> obs = observer(iter, err)
+0×2 DataFrame
  Row │ #10      #13
      │ Union{}  Union{}
 ─────┴──────────────────
@@ -325,7 +283,7 @@ julia> π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=10
 3.1414926535900345
 
 julia> obs
-10×2 Observer
+10×2 DataFrame
  Row │ #10    #13
      │ Int64  Float64
 ─────┼────────────────────
@@ -342,7 +300,8 @@ julia> obs
 ```
 
 
-Then, you can use the variables that the functions were stored in to obtain the results:
+You can use the functions themselves to access results, as long as you convert
+them to strings or symbols:
 
 ```julia
 julia> obs[!, string(iter)]
@@ -358,7 +317,7 @@ julia> obs[!, string(iter)]
   9000
  10000
 
-julia> obs[!, string(err)]
+julia> obs[!, Symbol(err)]
 10-element Vector{Float64}:
  0.0003183098066059948
  0.0001591549331452938
@@ -373,11 +332,14 @@ julia> obs[!, string(err)]
 ```
 
 
-You can also rename the columns to more desirable names:
+You can also rename the columns to more desirable names using the `rename!`
+function from `DataFrames`:
 
 ```julia
+julia> using DataFrames
+
 julia> rename!(obs, ["Iteration", "Error"])
-10×2 Observer
+10×2 DataFrame
  Row │ Iteration  Error
      │ Int64      Float64
 ─────┼────────────────────────
@@ -420,11 +382,19 @@ julia> obs.Error
 ```
 
 
+Column functions will be preserved even if the columns are renamed (and in
+any other operation in which DataFrames.jl preserves so-called `:note`-style
+metadata, see the
+[DataFrames.jl documentation on metadata](https://dataframes.juliadata.org/stable/lib/metadata/)
+for more details.
+
+
+
 ## Accessing and modifying functions
 
 
 
-You can access and modify functions of an Observer with `get_function`, `set_function!`, and `insert_function!`:
+You can access and modify functions of an observer with `get_function`, `set_function!`, and `insert_function!`:
 
 ```julia
 julia> get_function(obs, "Iteration") == iter
@@ -444,7 +414,7 @@ julia> get_function(obs, "New column") == cos
 true
 
 julia> obs
-10×3 Observer
+10×3 DataFrame
  Row │ Iteration  Error        New column
      │ Int64      Float64      Missing
 ─────┼────────────────────────────────────
@@ -472,15 +442,15 @@ insert_function!(obs, "Error", cos)
 
 
 
-Alternatively, if you define the `Observer` with column names to begin with,
+Alternatively, if you define the observer with column names to begin with,
 then you can get the results using the function names:
 
 ```julia
-julia> obs = Observer(
+julia> obs = observer(
          "Iteration" => (; iteration) -> iteration,
          "Error" => (; π_approx) -> abs(π - π_approx) / π,
        )
-0×2 Observer
+0×2 DataFrame
  Row │ Iteration  Error
      │ Union{}    Union{}
 ─────┴────────────────────
@@ -520,13 +490,13 @@ julia> obs.Error
 
 
 
-You can save and load Observers with packages like [JLD2.jl](https://github.com/JuliaIO/JLD2.jl),
+You can save and load observers with packages like [JLD2.jl](https://github.com/JuliaIO/JLD2.jl),
 or any other packages you like:
 
 ```julia
 using JLD2
 jldsave("results.jld2"; obs)
-obs_loaded = Observer(load("results.jld2", "obs"))
+obs_loaded = load("results.jld2", "obs")
 ```
 
 
@@ -546,7 +516,7 @@ though this will drop information about the functions associated with each colum
 ```julia
 using CSV
 CSV.write("results.csv", obs)
-obs_loaded = Observer(CSV.File("results.csv"))
+obs_loaded = DataFrame(CSV.File("results.csv"))
 ```
 
 
