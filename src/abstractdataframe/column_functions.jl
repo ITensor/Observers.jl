@@ -44,6 +44,10 @@ function insert_function!(df::AbstractDataFrame, f::Function; kwargs...)
   return insert_function!(df, string(f), f; kwargs...)
 end
 
+function remove_function!(df::AbstractDataFrame, f::Function)
+  return select!(df, Not(string(f)))
+end
+
 # Evaluate the function at the column with name `name`.
 # Optiononally ignores any unsupported trailing arguments and
 # unssuported keyword arguments that are pass to the function.

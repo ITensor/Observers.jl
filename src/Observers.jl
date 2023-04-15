@@ -1,6 +1,6 @@
 module Observers
 
-export observer, update!, get_function, set_function!, insert_function!
+export observer, update!, get_function, set_function!, insert_function!, remove_function!
 # Deprecated
 export results
 

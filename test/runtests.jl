@@ -342,4 +342,35 @@ returns_test() = "test"
     @test eo[2:2:niter] == rt[2:2:niter]
     @test all(ismissing, eo[1:2:niter])
   end
+
+  @testset "Insert and remove function" begin
+
+    function my_iterative_function(niter; observer!, observe_step)
+      π_approx = 0.0
+      for n in 1:niter
+        π_approx += f(n)
+        if iszero(n % observe_step)
+          update!(observer!; π_approx=4π_approx, iteration=n)
+        end
+      end
+      return 4π_approx
+    end
+
+    obs = observer("Error" => err_from_π)
+    @test names(obs) == ["Error"]
+
+    insert_function!(obs,iteration)
+    @test names(obs) == ["Error","iteration"]
+
+    niter = 10000
+    observe_step = 1000
+    π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
+
+    @test size(obs) == (10,2)
+    remove_function!(obs,iteration)
+    @test names(obs) == ["Error"]
+    @test size(obs) == (10,1)
+
+  end
+
 end
