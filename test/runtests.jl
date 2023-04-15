@@ -344,7 +344,6 @@ returns_test() = "test"
   end
 
   @testset "Insert and remove function" begin
-
     function my_iterative_function(niter; observer!, observe_step)
       π_approx = 0.0
       for n in 1:niter
@@ -359,18 +358,16 @@ returns_test() = "test"
     obs = observer("Error" => err_from_π)
     @test names(obs) == ["Error"]
 
-    insert_function!(obs,iteration)
-    @test names(obs) == ["Error","iteration"]
+    insert_function!(obs, iteration)
+    @test names(obs) == ["Error", "iteration"]
 
     niter = 10000
     observe_step = 1000
     π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
 
-    @test size(obs) == (10,2)
-    remove_function!(obs,iteration)
+    @test size(obs) == (10, 2)
+    remove_function!(obs, iteration)
     @test names(obs) == ["Error"]
-    @test size(obs) == (10,1)
-
+    @test size(obs) == (10, 1)
   end
-
 end
