@@ -1,6 +1,8 @@
 # Convenient constructors of DataFrames with functions as column metadata,
 # called an "observer".
 
+observer() = DataFrame()
+
 # In general, fall back to `DataFrame` constructors.
 observer(args...; kwargs...) = DataFrame(args...; kwargs...)
 

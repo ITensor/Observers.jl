@@ -13,6 +13,12 @@ nofunction() = missing
 returns_test() = "test"
 
 @testset "Observers" begin
+  @testset "Constructors" begin
+    # Test that we can default construct
+    obs = observer()
+    @test size(obs) == (0, 0)
+  end
+
   @testset "Examples" begin
     example_files = ["example1.jl", "README.jl"]
     for example_file in example_files
