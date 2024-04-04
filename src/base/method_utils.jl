@@ -21,7 +21,9 @@ function remove_unsupported_kwargs(method::Method, kwargs)
   has_varargs = any(endswith("...") ∘ string, method_keywords)
   filtered_kwargs = kwargs
   if !has_varargs
-    filtered_kwargs = pairs(Dict([keyword => kwargs[keyword] for keyword in method_keywords]))
+    filtered_kwargs = pairs(
+      Dict([keyword => kwargs[keyword] for keyword in method_keywords])
+    )
   end
   return filtered_kwargs
 end
