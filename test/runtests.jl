@@ -354,9 +354,7 @@ returns_test() = "test"
     f(; x, kwargs...) = (x, kwargs[:y])
     g(; x) = (x,)
     obs = observer(:f => f, :g => g)
-    display(obs)
     update!(obs; x=2, y=3)
-    display(obs)
     @test obs.f == [(2, 3)]
     @test obs.g == [(2,)]
   end
