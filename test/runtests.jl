@@ -1,7 +1,8 @@
-using Compat
-using DataFrames
-using Observers
-using Test
+@eval module $(gensym())
+using Compat: Returns
+using DataFrames: ncol, nrow
+using Observers: Observers, observer, update!
+using Test: @test, @test_broken, @test_throws, @testset
 
 # Example Observer functions to use in tests.
 # Need to define outside of `@testset` since the
@@ -19,10 +20,15 @@ returns_test() = "test"
     @test size(obs) == (0, 0)
   end
 
-  @testset "Examples" begin
-    example_files = ["example1.jl", "README.jl"]
-    for example_file in example_files
-      include(joinpath(pkgdir(Observers), "examples", example_file))
+  @eval module $(gensym())
+    using Observers: Observers
+    using Suppressor: @suppress
+    using Test: @testset
+    @testset "Examples" begin
+      example_files = ["example1.jl", "README.jl"]
+      for example_file in example_files
+        @suppress include(joinpath(pkgdir(Observers), "examples", example_file))
+      end
     end
   end
 
@@ -342,4 +348,15 @@ returns_test() = "test"
     @test eo[2:2:niter] == rt[2:2:niter]
     @test all(ismissing, eo[1:2:niter])
   end
+
+  @testset "Observer functions for vararg keyword arguments (issue #18)" begin
+    # https://github.com/GTorlai/Observers.jl/issues/18
+    f(; x, kwargs...) = (x, kwargs[:y])
+    g(; x) = (x,)
+    obs = observer(:f => f, :g => g)
+    update!(obs; x=2, y=3)
+    @test obs.f == [(2, 3)]
+    @test obs.g == [(2,)]
+  end
+end
 end
