@@ -1,5 +1,5 @@
 @eval module $(gensym())
-using Compat: Compat
+using Compat: Returns
 using DataFrames: ncol, nrow
 using Observers: Observers, observer, update!
 using Test: @test, @test_broken, @test_throws, @testset
