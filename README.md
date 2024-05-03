@@ -45,7 +45,7 @@ julia> ] add Observers
 ## Basic Usage
 
 ```julia
-using Observers
+using Observers: Observers, observer
 
 # Series for π/4
 f(k) = (-1)^(k + 1) / (2k - 1)
@@ -55,7 +55,7 @@ function my_iterative_function(niter; observer!, observe_step)
   for n in 1:niter
     π_approx += f(n)
     if iszero(n % observe_step)
-      update!(observer!; iteration=n, π_approx=4π_approx)
+      Observers.update!(observer!; iteration=n, π_approx=4π_approx)
     end
   end
   return 4π_approx
@@ -336,7 +336,7 @@ You can also rename the columns to more desirable names using the `rename!`
 function from `DataFrames`:
 
 ```julia
-julia> using DataFrames
+julia> using DataFrames: rename!
 
 julia> rename!(obs, ["Iteration", "Error"])
 10×2 DataFrame
@@ -394,23 +394,23 @@ for more details.
 
 
 
-You can access and modify functions of an observer with `get_function`, `set_function!`, and `insert_function!`:
+You can access and modify functions of an observer with `Observers.get_function`, `Observers.set_function!`, and `Observers.insert_function!`:
 
 ```julia
-julia> get_function(obs, "Iteration") == iter
+julia> Observers.get_function(obs, "Iteration") == iter
 true
 
-julia> get_function(obs, "Error") == err
+julia> Observers.get_function(obs, "Error") == err
 true
 
-julia> set_function!(obs, "Error" => sin);
+julia> Observers.set_function!(obs, "Error" => sin);
 
-julia> get_function(obs, "Error") == sin
+julia> Observers.get_function(obs, "Error") == sin
 true
 
-julia> insert_function!(obs, "New column" => cos);
+julia> Observers.insert_function!(obs, "New column" => cos);
 
-julia> get_function(obs, "New column") == cos
+julia> Observers.get_function(obs, "New column") == cos
 true
 
 julia> obs
@@ -431,13 +431,13 @@ julia> obs
 ```
 
 
-`set_function!` just updates the function of an existing column but doesn't create new columns,
-while `insert_function!` creates a new column and sets the function of that new column
+`Observers.set_function!` just updates the function of an existing column but doesn't create new columns,
+while `Observers.insert_function!` creates a new column and sets the function of that new column
 but won't update an existing column.
 For example, these will both throw errors:
 ```julia
-set_function!(obs, "New column 2", cos)
-insert_function!(obs, "Error", cos)
+Observers.set_function!(obs, "New column 2", cos)
+Observers.insert_function!(obs, "Error", cos)
 ```
 
 
@@ -514,7 +514,8 @@ Another option is saving and loading as a
 though this will drop information about the functions associated with each column:
 
 ```julia
-using CSV
+using CSV: CSV
+using DataFrames: DataFrame
 CSV.write("results.csv", obs)
 obs_loaded = DataFrame(CSV.File("results.csv"))
 ```
@@ -537,8 +538,9 @@ This [README](https://github.com/GTorlai/Observers.jl#readme) file was generated
 [Weave.jl](https://github.com/JunoLab/Weave.jl) with the following commands:
 
 ```julia
-using Observers, Weave
-weave(
+using Observers: Observers
+using Weave: Weave
+Weave.weave(
   joinpath(pkgdir(Observers), "examples", "README.jl");
   doctype="github",
   out_path=pkgdir(Observers),

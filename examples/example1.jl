@@ -1,4 +1,4 @@
-using Observers
+using Observers: observer
 
 # Series for π/4
 f(k) = (-1)^(k + 1) / (2k - 1)
@@ -8,7 +8,7 @@ function my_iterative_function(niter; observer!, observe_step)
   for n in 1:niter
     π_approx += f(n)
     if iszero(n % observe_step)
-      update!(observer!; π_approx=4π_approx, iteration=n)
+      Observers.update!(observer!; π_approx=4π_approx, iteration=n)
     end
   end
   return 4π_approx

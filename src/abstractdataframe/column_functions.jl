@@ -1,3 +1,6 @@
+using Compat: @compat
+using DataFrames: AbstractDataFrame, colmetadata, colmetadata!, insertcols!
+
 # Function accessors interface
 get_function(df::AbstractDataFrame, name) = colmetadata(df, name, "function")
 
