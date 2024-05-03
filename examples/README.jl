@@ -32,7 +32,7 @@
 
 #+ results="hidden"
 
-using Observers: observer
+using Observers: Observers, observer
 
 # Series for π/4
 f(k) = (-1)^(k + 1) / (2k - 1)

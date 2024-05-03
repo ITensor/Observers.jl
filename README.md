@@ -45,7 +45,7 @@ julia> ] add Observers
 ## Basic Usage
 
 ```julia
-using Observers: observer
+using Observers: Observers, observer
 
 # Series for π/4
 f(k) = (-1)^(k + 1) / (2k - 1)
@@ -78,7 +78,7 @@ Now we run the function and analyze the results:
 
 ```julia
 julia> π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
-Error: UndefVarError: `Observers` not defined
+3.1414926535900345
 ```
 
 
@@ -89,10 +89,20 @@ of the data frame. You can view the results as a table of data by printing it:
 
 ```julia
 julia> obs
-0×2 DataFrame
+10×2 DataFrame
  Row │ iteration  error
-     │ Union{}    Union{}
-─────┴────────────────────
+     │ Int64      Float64
+─────┼────────────────────────
+   1 │      1000  0.00031831
+   2 │      2000  0.000159155
+   3 │      3000  0.000106103
+   4 │      4000  7.95775e-5
+   5 │      5000  6.3662e-5
+   6 │      6000  5.30516e-5
+   7 │      7000  4.54728e-5
+   8 │      8000  3.97887e-5
+   9 │      9000  3.53678e-5
+  10 │     10000  3.1831e-5
 ```
 
 
@@ -101,7 +111,17 @@ with the standard `DataFrame` interface:
 
 ```julia
 julia> obs.error
-Union{}[]
+10-element Vector{Float64}:
+ 0.0003183098066059948
+ 0.0001591549331452938
+ 0.00010610329244741256
+ 7.957747030096378e-5
+ 6.366197660078155e-5
+ 5.305164733068067e-5
+ 4.54728406537879e-5
+ 3.978873562176942e-5
+ 3.536776502730045e-5
+ 3.18309885415475e-5
 
 julia> obs[!, "error"] == obs.error # DataFrames view access syntax
 true
@@ -127,7 +147,13 @@ You can perform various operations like slicing:
 
 ```julia
 julia> obs[4:6, :]
-Error: BoundsError: attempt to access 0×2 DataFrame at index [4:6, :]
+3×2 DataFrame
+ Row │ iteration  error
+     │ Int64      Float64
+─────┼───────────────────────
+   1 │      4000  7.95775e-5
+   2 │      5000  6.3662e-5
+   3 │      6000  5.30516e-5
 ```
 
 
@@ -179,13 +205,23 @@ julia> obs = observer((; iteration) -> iteration, (; π_approx) -> abs(π - π_a
 ─────┴──────────────────
 
 julia> π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
-Error: UndefVarError: `Observers` not defined
+3.1414926535900345
 
 julia> obs
-0×2 DataFrame
- Row │ #4       #6
-     │ Union{}  Union{}
-─────┴──────────────────
+10×2 DataFrame
+ Row │ #4     #6
+     │ Int64  Float64
+─────┼────────────────────
+   1 │  1000  0.00031831
+   2 │  2000  0.000159155
+   3 │  3000  0.000106103
+   4 │  4000  7.95775e-5
+   5 │  5000  6.3662e-5
+   6 │  6000  5.30516e-5
+   7 │  7000  4.54728e-5
+   8 │  8000  3.97887e-5
+   9 │  9000  3.53678e-5
+  10 │ 10000  3.1831e-5
 ```
 
 
@@ -200,10 +236,30 @@ the observer was defined:
 
 ```julia
 julia> obs[!, 1]
-Union{}[]
+10-element Vector{Int64}:
+  1000
+  2000
+  3000
+  4000
+  5000
+  6000
+  7000
+  8000
+  9000
+ 10000
 
 julia> obs[!, 2]
-Union{}[]
+10-element Vector{Float64}:
+ 0.0003183098066059948
+ 0.0001591549331452938
+ 0.00010610329244741256
+ 7.957747030096378e-5
+ 6.366197660078155e-5
+ 5.305164733068067e-5
+ 4.54728406537879e-5
+ 3.978873562176942e-5
+ 3.536776502730045e-5
+ 3.18309885415475e-5
 ```
 
 
@@ -224,13 +280,23 @@ julia> obs = observer(iter, err)
 ─────┴──────────────────
 
 julia> π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
-Error: UndefVarError: `Observers` not defined
+3.1414926535900345
 
 julia> obs
-0×2 DataFrame
- Row │ #10      #13
-     │ Union{}  Union{}
-─────┴──────────────────
+10×2 DataFrame
+ Row │ #10    #13
+     │ Int64  Float64
+─────┼────────────────────
+   1 │  1000  0.00031831
+   2 │  2000  0.000159155
+   3 │  3000  0.000106103
+   4 │  4000  7.95775e-5
+   5 │  5000  6.3662e-5
+   6 │  6000  5.30516e-5
+   7 │  7000  4.54728e-5
+   8 │  8000  3.97887e-5
+   9 │  9000  3.53678e-5
+  10 │ 10000  3.1831e-5
 ```
 
 
@@ -239,10 +305,30 @@ them to strings or symbols:
 
 ```julia
 julia> obs[!, string(iter)]
-Union{}[]
+10-element Vector{Int64}:
+  1000
+  2000
+  3000
+  4000
+  5000
+  6000
+  7000
+  8000
+  9000
+ 10000
 
 julia> obs[!, Symbol(err)]
-Union{}[]
+10-element Vector{Float64}:
+ 0.0003183098066059948
+ 0.0001591549331452938
+ 0.00010610329244741256
+ 7.957747030096378e-5
+ 6.366197660078155e-5
+ 5.305164733068067e-5
+ 4.54728406537879e-5
+ 3.978873562176942e-5
+ 3.536776502730045e-5
+ 3.18309885415475e-5
 ```
 
 
@@ -253,16 +339,46 @@ function from `DataFrames`:
 julia> using DataFrames: rename!
 
 julia> rename!(obs, ["Iteration", "Error"])
-0×2 DataFrame
+10×2 DataFrame
  Row │ Iteration  Error
-     │ Union{}    Union{}
-─────┴────────────────────
+     │ Int64      Float64
+─────┼────────────────────────
+   1 │      1000  0.00031831
+   2 │      2000  0.000159155
+   3 │      3000  0.000106103
+   4 │      4000  7.95775e-5
+   5 │      5000  6.3662e-5
+   6 │      6000  5.30516e-5
+   7 │      7000  4.54728e-5
+   8 │      8000  3.97887e-5
+   9 │      9000  3.53678e-5
+  10 │     10000  3.1831e-5
 
 julia> obs.Iteration
-Union{}[]
+10-element Vector{Int64}:
+  1000
+  2000
+  3000
+  4000
+  5000
+  6000
+  7000
+  8000
+  9000
+ 10000
 
 julia> obs.Error
-Union{}[]
+10-element Vector{Float64}:
+ 0.0003183098066059948
+ 0.0001591549331452938
+ 0.00010610329244741256
+ 7.957747030096378e-5
+ 6.366197660078155e-5
+ 5.305164733068067e-5
+ 4.54728406537879e-5
+ 3.978873562176942e-5
+ 3.536776502730045e-5
+ 3.18309885415475e-5
 ```
 
 
@@ -282,28 +398,36 @@ You can access and modify functions of an observer with `Observers.get_function`
 
 ```julia
 julia> Observers.get_function(obs, "Iteration") == iter
-Error: UndefVarError: `Observers` not defined
+true
 
 julia> Observers.get_function(obs, "Error") == err
-Error: UndefVarError: `Observers` not defined
+true
 
 julia> Observers.set_function!(obs, "Error" => sin);
-Error: UndefVarError: `Observers` not defined
 
 julia> Observers.get_function(obs, "Error") == sin
-Error: UndefVarError: `Observers` not defined
+true
 
 julia> Observers.insert_function!(obs, "New column" => cos);
-Error: UndefVarError: `Observers` not defined
 
 julia> Observers.get_function(obs, "New column") == cos
-Error: UndefVarError: `Observers` not defined
+true
 
 julia> obs
-0×2 DataFrame
- Row │ Iteration  Error
-     │ Union{}    Union{}
-─────┴────────────────────
+10×3 DataFrame
+ Row │ Iteration  Error        New column
+     │ Int64      Float64      Missing
+─────┼────────────────────────────────────
+   1 │      1000  0.00031831      missing
+   2 │      2000  0.000159155     missing
+   3 │      3000  0.000106103     missing
+   4 │      4000  7.95775e-5      missing
+   5 │      5000  6.3662e-5       missing
+   6 │      6000  5.30516e-5      missing
+   7 │      7000  4.54728e-5      missing
+   8 │      8000  3.97887e-5      missing
+   9 │      9000  3.53678e-5      missing
+  10 │     10000  3.1831e-5       missing
 ```
 
 
@@ -332,13 +456,33 @@ julia> obs = observer(
 ─────┴────────────────────
 
 julia> π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=1000)
-Error: UndefVarError: `Observers` not defined
+3.1414926535900345
 
 julia> obs.Iteration
-Union{}[]
+10-element Vector{Int64}:
+  1000
+  2000
+  3000
+  4000
+  5000
+  6000
+  7000
+  8000
+  9000
+ 10000
 
 julia> obs.Error
-Union{}[]
+10-element Vector{Float64}:
+ 0.0003183098066059948
+ 0.0001591549331452938
+ 0.00010610329244741256
+ 7.957747030096378e-5
+ 6.366197660078155e-5
+ 5.305164733068067e-5
+ 4.54728406537879e-5
+ 3.978873562176942e-5
+ 3.536776502730045e-5
+ 3.18309885415475e-5
 ```
 
 
