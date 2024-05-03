@@ -32,7 +32,7 @@
 
 #+ results="hidden"
 
-using Observers
+using Observers: observer
 
 # Series for π/4
 f(k) = (-1)^(k + 1) / (2k - 1)
@@ -42,7 +42,7 @@ function my_iterative_function(niter; observer!, observe_step)
   for n in 1:niter
     π_approx += f(n)
     if iszero(n % observe_step)
-      update!(observer!; iteration=n, π_approx=4π_approx)
+      Observers.update!(observer!; iteration=n, π_approx=4π_approx)
     end
   end
   return 4π_approx
@@ -139,7 +139,7 @@ obs[!, Symbol(err)]
 #' You can also rename the columns to more desirable names using the `rename!`
 #' function from `DataFrames`:
 #+ term=true
-using DataFrames
+using DataFrames: rename!
 rename!(obs, ["Iteration", "Error"])
 obs.Iteration
 obs.Error
@@ -152,23 +152,23 @@ obs.Error
 
 #' ## Accessing and modifying functions
 
-#' You can access and modify functions of an observer with `get_function`, `set_function!`, and `insert_function!`:
+#' You can access and modify functions of an observer with `Observers.get_function`, `Observers.set_function!`, and `Observers.insert_function!`:
 #+ term=true
-get_function(obs, "Iteration") == iter
-get_function(obs, "Error") == err
-set_function!(obs, "Error" => sin);
-get_function(obs, "Error") == sin
-insert_function!(obs, "New column" => cos);
-get_function(obs, "New column") == cos
+Observers.get_function(obs, "Iteration") == iter
+Observers.get_function(obs, "Error") == err
+Observers.set_function!(obs, "Error" => sin);
+Observers.get_function(obs, "Error") == sin
+Observers.insert_function!(obs, "New column" => cos);
+Observers.get_function(obs, "New column") == cos
 obs
 
-#' `set_function!` just updates the function of an existing column but doesn't create new columns,
-#' while `insert_function!` creates a new column and sets the function of that new column
+#' `Observers.set_function!` just updates the function of an existing column but doesn't create new columns,
+#' while `Observers.insert_function!` creates a new column and sets the function of that new column
 #' but won't update an existing column.
 #' For example, these will both throw errors:
 #' ```julia
-#' set_function!(obs, "New column 2", cos)
-#' insert_function!(obs, "Error", cos)
+#' Observers.set_function!(obs, "New column 2", cos)
+#' Observers.insert_function!(obs, "Error", cos)
 #' ```
 
 #' Alternatively, if you define the observer with column names to begin with,
@@ -198,7 +198,8 @@ obs_loaded.Error == obs.Error
 #' [CSV file](https://dataframes.juliadata.org/stable/man/importing_and_exporting/#CSV-Files),
 #' though this will drop information about the functions associated with each column:
 #+ results="hidden"
-using CSV
+using CSV: CSV
+using DataFrames: DataFrame
 CSV.write("results.csv", obs)
 obs_loaded = DataFrame(CSV.File("results.csv"))
 #+ term=true
@@ -211,8 +212,9 @@ obs_loaded.Error == obs.Error
 #' [Weave.jl](https://github.com/JunoLab/Weave.jl) with the following commands:
 #+ eval=false
 
-using Observers, Weave
-weave(
+using Observers: Observers
+using Weave: Weave
+Weave.weave(
   joinpath(pkgdir(Observers), "examples", "README.jl");
   doctype="github",
   out_path=pkgdir(Observers),

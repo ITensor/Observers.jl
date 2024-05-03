@@ -4,11 +4,11 @@ export observer, update!, get_function, set_function!, insert_function!
 # Deprecated
 export results
 
-using Accessors
-using Compat
-using ConstructionBase
-using DataFrames
-using DataAPI
+## using Accessors
+## using Compat
+## using ConstructionBase
+## using DataFrames
+## using DataAPI
 
 include("base/method_utils.jl")
 include("abstractdataframe/column_functions.jl")

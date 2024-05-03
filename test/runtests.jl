@@ -1,19 +1,34 @@
 @eval module $(gensym())
 using Compat: Returns
 using DataFrames: ncol, nrow
-using Observers: Observers, observer, update!
+using Observers: Observers, observer
 using Test: @test, @test_broken, @test_throws, @testset
 
 # Example Observer functions to use in tests.
 # Need to define outside of `@testset` since the
 # `@testset` mangles the names of functions that
 # are defined in its scope.
-iteration(; iteration) = iteration
+iteration(; iter) = iter
 err_from_π(; π_approx) = abs(π - π_approx) / π
 nofunction() = missing
 returns_test() = "test"
 
 @testset "Observers" begin
+  @testset "Exports" begin
+    @test issetequal(
+      names(Observers),
+      [
+        :Observer,
+        :Observers,
+        :get_function,
+        :insert_function!,
+        :observer,
+        :results,
+        :set_function!,
+        :update!,
+      ],
+    )
+  end
   @testset "Constructors" begin
     # Test that we can default construct
     obs = observer()
@@ -45,24 +60,38 @@ returns_test() = "test"
       for n in 1:niter
         π_approx += f(n)
         if iszero(n % observe_step)
-          update!(observer!; π_approx=4π_approx, iteration=n)
+          Observers.update!(observer!; π_approx=4π_approx, iter=n)
         end
       end
       return 4π_approx
     end
 
-    obs = observer(["Error" => err_from_π, "Iteration" => iteration])
-
-    @test ncol(obs) == 2
-    @test obs.Error == []
-    @test obs.Iteration == []
-
-    niter = 10000
-    observe_step = 1000
-    π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
-
-    for res in eachcol(obs)
-      @test length(res) == niter ÷ observe_step
+    Error(; π_approx) = err_from_π(; π_approx)
+    Iteration(; iter) = iteration(; iter)
+    for obs in (
+      observer(["Error", "Iteration"], [err_from_π, iteration]),
+      observer([:Error, :Iteration], [err_from_π, iteration]),
+      observer(("Error", "Iteration"), (err_from_π, iteration)),
+      observer((:Error, :Iteration), (err_from_π, iteration)),
+      observer(["Error" => err_from_π, "Iteration" => iteration]),
+      observer([:Error => err_from_π, :Iteration => iteration]),
+      observer("Error" => err_from_π, "Iteration" => iteration),
+      observer(:Error => err_from_π, :Iteration => iteration),
+      observer((; Error=err_from_π, Iteration=iteration)),
+      observer(; Error=err_from_π, Iteration=iteration),
+      observer([Error, Iteration]),
+      observer((Error, Iteration)),
+      observer(Error, Iteration),
+    )
+      @test ncol(obs) == 2
+      @test obs.Error == []
+      @test obs.Iteration == []
+      niter = 10000
+      observe_step = 1000
+      π_approx = my_iterative_function(niter; (observer!)=obs, observe_step=observe_step)
+      for res in eachcol(obs)
+        @test length(res) == niter ÷ observe_step
+      end
     end
 
     obs = observer(["Error" => err_from_π, "Iteration" => iteration])
@@ -169,7 +198,7 @@ returns_test() = "test"
       t = (x + 2 * y, 0, 0)
       a = y^2
       b = 3.0
-      return update!(observer!, x, y, t; a=a, b=b)
+      return Observers.update!(observer!, x, y, t; a=a, b=b)
     end
 
     obs = observer(["f1" => f1, "f2" => f2, "f3" => f3, "f4" => f4, "f5" => f5])
@@ -186,17 +215,17 @@ returns_test() = "test"
   @testset "Observer skip missing or nothing" begin
     obs = observer("x" => Returns(missing), "y" => Returns(missing))
     @test isempty(obs)
-    update!(obs)
+    Observers.update!(obs)
     @test isempty(obs)
-    update!(obs; update!_kwargs=(; skip_all_missing=false))
+    Observers.update!(obs; update!_kwargs=(; skip_all_missing=false))
     @test nrow(obs) == 1
     @test all(ismissing, obs[1, :])
 
     obs = observer("x" => Returns(nothing), "y" => Returns(nothing))
     @test isempty(obs)
-    update!(obs)
+    Observers.update!(obs)
     @test isempty(obs)
-    update!(obs; update!_kwargs=(; skip_all_nothing=false))
+    Observers.update!(obs; update!_kwargs=(; skip_all_nothing=false))
     @test nrow(obs) == 1
     @test all(isnothing, obs[1, :])
   end
@@ -210,7 +239,7 @@ returns_test() = "test"
       for n in 1:niter
         π_approx += f(n)
         if iszero(n % observe_step)
-          update!(observer!; π_approx=4π_approx, iteration=n)
+          Observers.update!(observer!; π_approx=4π_approx, iter=n)
         end
       end
       return 4π_approx
@@ -253,7 +282,7 @@ returns_test() = "test"
       for k in 1:niter
         x = k
         y = k * √2
-        update!(observer!, x, y)
+        Observers.update!(observer!, x, y)
       end
     end
 
@@ -269,7 +298,7 @@ returns_test() = "test"
     f(x) = 2x
     function iterative(niter; observer!)
       for k in 1:niter
-        update!(observer!, k)
+        Observers.update!(observer!, k)
       end
     end
     obs0 = observer(["f" => f])
@@ -294,7 +323,7 @@ returns_test() = "test"
       for k in 1:niter
         x = k
         y = x * √2
-        update!(observer!, k, x, y)
+        Observers.update!(observer!, k, x, y)
       end
     end
 
