@@ -7,4 +7,7 @@ include("abstractdataframe/column_functions.jl")
 include("abstractdataframe/deprecated.jl")
 include("dataframe/observer.jl")
 include("dataframe/deprecated.jl")
+# For backwards compatibility since some
+# libraries were using `Observers.DataFrames`.
+using DataFrames: DataFrames
 end
