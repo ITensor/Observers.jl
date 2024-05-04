@@ -70,6 +70,11 @@ returns_test() = "test"
     Iteration(; iter) = iteration(; iter)
     for obs in (
       observer(["Error", "Iteration"], [err_from_π, iteration]),
+      observer(Any["Error", "Iteration"], Any[err_from_π, iteration]),
+      observer(
+        Iterators.map(identity, ["Error", "Iteration"]),
+        Iterators.map(identity, [err_from_π, iteration]),
+      ),
       observer([:Error, :Iteration], [err_from_π, iteration]),
       observer(("Error", "Iteration"), (err_from_π, iteration)),
       observer((:Error, :Iteration), (err_from_π, iteration)),
