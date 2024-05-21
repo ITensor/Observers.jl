@@ -19,7 +19,7 @@ print useful information from an iterative method, etc.
 
 
 Observers.jl v0.2 has been released, which preserves the same basic `update!`
-interface but a new design of the observer object, which is now
+interface but a new design of the observer object, which is
 now just a `DataFrame` from
 [DataFrames.jl](https://dataframes.juliadata.org/stable/). The basic constructor
 syntax is the same, though `Observer` has been deprecated in favor of `observer`.
